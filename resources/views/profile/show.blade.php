@@ -1,6 +1,8 @@
 @extends('layout')
 
 @section('content')
+<x-mobile-styles />
+<x-mobile-header />
 <x-sidebar />
 <div class="profile-page container">
     <style>
@@ -27,6 +29,180 @@
         .art-card .meta { padding:12px; }
         @media (max-width:1024px){ .masonry{ column-count:2 } .profile-avatar{ width:140px; height:140px; margin-top:-70px } }
         @media (max-width:720px){ .masonry{ column-count:1 } .profile-main{ flex-direction:column } .profile-left{ width:100%; margin-left:0 } .profile-avatar{ width:120px;height:120px; margin-top:-60px } }
+
+        /* Mobile Profile Layout */
+        @media (max-width: 768px) {
+            /* Hide desktop nav and sidebar */
+            nav, x-navbar, .navbar, header, .app-sidebar, footer {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .profile-page.container {
+                padding: 0 !important;
+                padding-top: 0 !important;
+                padding-bottom: 70px !important;
+                max-width: 100%;
+                margin: 0;
+            }
+
+            /* Mobile cover - full width, smaller height, no gap */
+            .profile-cover {
+                width: 100% !important;
+                height: 200px !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                margin-top: 56px !important; /* space for fixed header */
+                margin-bottom: 0 !important;
+            }
+
+            /* Mobile avatar - centered and smaller */
+            .profile-avatar {
+                margin: -50px auto 16px !important;
+                width: 100px !important;
+                height: 100px !important;
+                border: 4px solid white !important;
+            }
+
+            /* Hide left sidebar on mobile */
+            .profile-left {
+                display: none !important;
+            }
+
+            /* Mobile profile content */
+            .profile-main {
+                display: block;
+                padding: 0;
+            }
+
+            .profile-right {
+                width: 100%;
+                padding: 0;
+            }
+
+            /* Mobile profile header info (below avatar) */
+            .mobile-profile-info {
+                display: block !important;
+                text-align: center;
+                padding: 16px;
+                background: white;
+            }
+
+            .mobile-profile-name {
+                font-size: 20px;
+                font-weight: 700;
+                margin: 0;
+            }
+
+            .mobile-profile-role {
+                color: #666;
+                font-size: 14px;
+                margin-top: 4px;
+            }
+
+            .mobile-profile-stats {
+                display: flex;
+                justify-content: center;
+                gap: 24px;
+                margin-top: 16px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .mobile-profile-stat {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .mobile-profile-stat-value {
+                font-size: 18px;
+                font-weight: 700;
+            }
+
+            .mobile-profile-stat-label {
+                font-size: 12px;
+                color: #666;
+                margin-top: 4px;
+            }
+
+            /* Mobile tabs */
+            .tabs {
+                padding: 0 16px;
+                margin: 16px 0 0 0;
+                gap: 24px;
+                border-bottom: 1px solid #e0e0e0;
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+
+            .tabs::-webkit-scrollbar {
+                display: none;
+            }
+
+            .tab {
+                padding: 12px 0;
+                border-radius: 0;
+                background: transparent !important;
+                box-shadow: none !important;
+                white-space: nowrap;
+                font-size: 14px;
+                position: relative;
+            }
+
+            .tab.active::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: #ea9066;
+                border-radius: 3px 3px 0 0;
+            }
+
+            /* Mobile masonry - 2 columns */
+            .masonry {
+                column-count: 2 !important;
+                column-gap: 4px !important;
+                padding: 4px;
+                margin: 0;
+            }
+
+            .art-card {
+                margin-bottom: 4px !important;
+                border-radius: 12px !important;
+            }
+
+            .art-card img {
+                border-radius: 12px !important;
+            }
+
+            .art-card .meta {
+                padding: 8px !important;
+            }
+
+            .art-card .meta > div:first-child {
+                font-size: 13px !important;
+            }
+
+            .art-card .meta > div:last-child {
+                font-size: 11px !important;
+            }
+
+            .portfolio-meta {
+                padding: 0 8px 8px !important;
+            }
+
+            /* Hide chips on mobile */
+            .chips {
+                display: none !important;
+            }
+        }
         /* Modal styles */
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; padding:20px; z-index:60 }
         .modal-card { background:white; border-radius:12px; padding:18px; width:820px; max-width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
@@ -54,6 +230,34 @@
     @endauth
 
     <div class="profile-main">
+        <!-- Mobile Profile Info (hidden on desktop) -->
+        <div class="mobile-profile-info" style="display:none">
+            <div class="profile-avatar">
+                <img src="{{ $user->avatar_url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;display:block">
+            </div>
+            <h2 class="mobile-profile-name">{{ $user->name ?? $user->username }}</h2>
+            <div class="mobile-profile-role">{{ $user->role ? ucfirst($user->role) : '' }}</div>
+            @if($user->headline || $user->institution || $user->location)
+                <div style="color:#666; font-size:13px; margin-top:8px">
+                    {{ $user->headline }}{{ ($user->headline && ($user->institution || $user->location)) ? ' · ' : '' }}{{ $user->institution }}{{ ($user->institution && $user->location) ? ', ' : '' }}{{ $user->location }}
+                </div>
+            @endif
+            <div class="mobile-profile-stats">
+                <div class="mobile-profile-stat">
+                    <div class="mobile-profile-stat-value">{{ $artworks->total() ?? 0 }}</div>
+                    <div class="mobile-profile-stat-label">Projects</div>
+                </div>
+                <div class="mobile-profile-stat">
+                    <div class="mobile-profile-stat-value">{{ $followersCount ?? 0 }}</div>
+                    <div class="mobile-profile-stat-label">Followers</div>
+                </div>
+                <div class="mobile-profile-stat">
+                    <div class="mobile-profile-stat-value">{{ $followingCount ?? 0 }}</div>
+                    <div class="mobile-profile-stat-label">Following</div>
+                </div>
+            </div>
+        </div>
+
         <div class="profile-left">
             <div class="profile-avatar">
                 <img src="{{ $user->avatar_url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;display:block">
@@ -795,4 +999,6 @@
             setTimeout(()=>{ f.style.opacity = '0'; setTimeout(()=>f.remove(), 300); }, 2000);
         }    });
 </script>
+
+<x-mobile-bottom-bar />
 @endsection

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <x-mobile-styles />
     <style>
       /* icon button style for explore modal (compact) */
       .icon-btn { background:#f7f7f7; border:none; padding:4px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; }
@@ -397,50 +398,377 @@ Group 20
             background: rgba(0,0,0,0.03);
         }
 
-        /* Responsive */
+        /* Responsive - Mobile Pinterest-style */
         @media (max-width: 768px) {
-            .hero {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-content h1 {
-                font-size: 32px;
-            }
-
-            nav {
-                display: none;
-            }
-
-            .menu-toggle {
-                display: flex;
-            }
-
+            /* Hide desktop elements */
+            nav,
+            x-navbar,
+            .navbar,
+            header,
+            .desktop-only,
+            .app-sidebar,
             footer {
-                grid-template-columns: 1fr 1fr;
+                display: none !important;
             }
 
+            /* Also hide navbar component */
+            body > x-navbar,
+            body > nav,
+            body > header {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+                overflow-x: hidden;
+            }
+
+            .container {
+                padding: 0 !important;
+                margin: 0 !important;
+                padding-top: 0 !important;
+                padding-bottom: 70px !important; /* space for bottom nav */
+            }
+
+            /* Mobile fixed header */
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 100;
+                background: white;
+                padding: 8px 16px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            }
+
+            .mobile-header-logo {
+                width: 40px;
+                height: 40px;
+                flex-shrink: 0;
+            }
+
+            .mobile-header-logo img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+
+            .mobile-header-search {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                background: #f8f9fa;
+                border: 1px solid #e0e0e0;
+                padding: 8px 12px;
+                border-radius: 20px;
+                gap: 8px;
+            }
+
+            .mobile-header-search input {
+                flex: 1;
+                border: none;
+                background: transparent;
+                outline: none;
+                font-size: 14px;
+                color: #333;
+            }
+
+            .mobile-header-search input::placeholder {
+                color: #999;
+            }
+
+            .mobile-header-search img {
+                width: 18px;
+                height: 18px;
+            }
+
+            .mobile-header-user {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-shrink: 0;
+            }
+
+            .mobile-header-avatar {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+
+            .mobile-header-info {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .mobile-header-username {
+                font-size: 12px;
+                font-weight: 600;
+                color: #333;
+                line-height: 1;
+            }
+
+            .mobile-header-badge {
+                font-size: 9px;
+                padding: 2px 6px;
+                border-radius: 4px;
+                background: #4caf50;
+                color: white;
+                line-height: 1;
+            }
+
+            /* Hide desktop search section on mobile */
+            .search-section {
+                display: none !important;
+            }
+
+            /* Mobile categories - hidden (using category button instead) */
+            .categories {
+                display: none !important;
+            }
+
+            .category-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            /* Mobile upload modal */
+            .mobile-upload-modal {
+                display: none;
+                position: fixed;
+                bottom: 70px;
+                left: 0;
+                right: 0;
+                background: white;
+                border-radius: 20px 20px 0 0;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+                z-index: 199;
+                padding: 20px;
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+            }
+
+            .mobile-upload-modal.show {
+                display: block;
+                transform: translateY(0);
+            }
+
+            .mobile-upload-option {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px;
+                background: #f8f9fa;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .mobile-upload-option:hover {
+                background: #e9ecef;
+            }
+
+            .mobile-upload-option img {
+                width: 32px;
+                height: 32px;
+            }
+
+            .mobile-upload-option-text {
+                flex: 1;
+            }
+
+            .mobile-upload-option-title {
+                font-size: 15px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 2px;
+            }
+
+            .mobile-upload-option-desc {
+                font-size: 12px;
+                color: #666;
+            }
+
+            .mobile-upload-backdrop {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 198;
+            }
+
+            .mobile-upload-backdrop.show {
+                display: block;
+            }
+
+            /* Mobile grid - 2 columns like Pinterest */
             .portfolio-grid {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 20px;
-             
+                padding: 4px;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 4px;
+                grid-auto-rows: auto;
+                margin: 0;
+            }
+
+            .portfolio-item {
+                border-radius: 12px;
+                grid-row: span 1;
+                grid-column: span 1;
+                height: auto;
+            }
+
+            .portfolio-item.tall {
+                grid-row: span 1;
+            }
+
+            .portfolio-item.wide {
+                grid-column: span 1;
             }
 
             .portfolio-item img {
                 width: 100%;
-                cursor: pointer;
-                   border-top-left-radius: 70px
+                height: auto;
+                aspect-ratio: 3/4;
+                object-fit: cover;
+                border-radius: 12px;
             }
 
+            .portfolio-info {
+                padding: 8px;
+                background: linear-gradient(transparent, rgba(0,0,0,0.75));
+            }
+
+            .portfolio-info h3 {
+                font-size: 13px;
+                margin-bottom: 3px;
+            }
+
+            .portfolio-info p {
+                font-size: 11px;
+            }
+
+            .portfolio-meta {
+                display: none;
+            }
+
+            /* Mobile modal */
             .modal-content {
                 flex-direction: column;
-                width: 95%;
+                width: 100%;
+                height: 100%;
                 max-width: none;
-                padding: 15px;
+                max-height: none;
+                padding: 0;
+                border-radius: 0;
+                overflow-y: auto;
+            }
+
+            .modal-left {
+                position: sticky;
+                top: 0;
+                background: black;
+                z-index: 1;
             }
 
             .modal-left img {
-                max-height: 250px;
+                width: 100%;
+                max-height: 60vh;
+                object-fit: contain;
+                border-radius: 0;
+            }
+
+            .modal-right {
+                padding: 16px;
+            }
+
+            .modal-close {
+                position: fixed;
+                top: 16px;
+                right: 16px;
+                background: rgba(255,255,255,0.9);
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                z-index: 10;
+            }
+
+            /* Bottom navigation */
+            .bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                border-top: 1px solid #e0e0e0;
+                padding: 8px 0;
+                z-index: 200;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+                justify-content: space-around;
+                align-items: center;
+            }
+
+            .bottom-nav-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                padding: 8px 16px;
+                cursor: pointer;
+                text-decoration: none;
+                color: #666;
+                transition: color 0.2s;
+                background: transparent;
+                border: none;
+            }
+
+            .bottom-nav-item:hover,
+            .bottom-nav-item.active {
+                color: #ea9066;
+            }
+
+            .bottom-nav-item img {
+                width: 24px;
+                height: 24px;
+            }
+
+            .bottom-nav-item span {
+                font-size: 11px;
+                font-weight: 500;
+            }
+        }
+
+        /* Hide mobile elements on desktop */
+        @media (min-width: 769px) {
+            .mobile-header,
+            .mobile-upload-modal,
+            .mobile-upload-backdrop,
+            .bottom-nav {
+                display: none !important;
+            }
+        }
+
+        /* Show mobile header only on mobile */
+        .mobile-header {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-header {
+                display: flex !important;
             }
         }
         /* Sidebar styles */
@@ -629,6 +957,152 @@ Group 20
             padding-left: 16px;
           }
         }
+
+        /* Mobile Category Button */
+        .mobile-category-btn {
+            display: none !important;
+        }
+
+        .mobile-category-modal {
+            display: none !important;
+        }
+
+        .mobile-modal-backdrop {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-category-btn {
+                display: flex !important;
+                position: fixed;
+                bottom: 90px;
+                right: 16px;
+                width: 56px;
+                height: 56px;
+                background: #ff6ec4;
+                border-radius: 50%;
+                border: none;
+                box-shadow: 0 4px 12px rgba(255, 110, 196, 0.4);
+                cursor: pointer;
+                z-index: 200;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.3s ease;
+            }
+
+            .mobile-category-btn:active {
+                transform: scale(0.95);
+            }
+
+            .mobile-category-btn img {
+                width: 24px;
+                height: 24px;
+                filter: brightness(0) invert(1);
+            }
+
+            /* Category Modal */
+            .mobile-category-modal {
+                display: block !important;
+                position: fixed;
+                bottom: -100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border-radius: 20px 20px 0 0;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+                z-index: 251;
+                transition: bottom 0.3s ease;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            .mobile-category-modal.show {
+                bottom: 0;
+            }
+
+            .mobile-modal-backdrop {
+                display: block !important;
+            }
+
+            .mobile-modal-backdrop.show {
+                display: block !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 250;
+            }
+
+            .mobile-category-header {
+                padding: 16px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 1;
+            }
+
+            .mobile-category-header h3 {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 600;
+            }
+
+            .mobile-category-close {
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                padding: 0;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+            }
+
+            .mobile-category-list {
+                padding: 8px 0;
+            }
+
+            .mobile-category-item {
+                padding: 16px 20px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                text-decoration: none;
+                color: #333;
+                transition: background 0.2s;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .mobile-category-item:hover {
+                background: #f9f9f9;
+            }
+
+            .mobile-category-item:active {
+                background: #f0f0f0;
+            }
+
+            .mobile-category-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                object-fit: cover;
+                flex-shrink: 0;
+            }
+
+            .mobile-category-name {
+                font-size: 16px;
+                font-weight: 500;
+            }
+        }
     </style>
 </head>
 <body>
@@ -637,29 +1111,31 @@ Group 20
       <!-- Sidebar component (extracted) -->
       <x-sidebar />
 
-            <!-- Search Bar -->
+            <!-- Desktop Hero and Search - Hidden on Mobile -->
+            <div class="desktop-only">
             @if($showHero ?? true)
               <section class="hero">
-            <div class="hero-content">
-                <h1>Find Your Best Designer</h1>
-          </div>
-          <div class="search-section">
-            <div class="search-bar">
-              <span class="search-icon"><img src="images/icon/search.png"></span>
-              <form action="/search" method="GET" style="display:flex; align-items:center; flex:1; gap:10px;">
-                <input type="text" name="q" placeholder=" Search for a category, artist, or service" style="flex:1; border:none; background:transparent; outline:none; font-size:16px; color:#333;">
-                <button type="submit" style="background:transparent; border:none; cursor:pointer; color:#666; font-size:16px; padding:0; display:flex; align-items:center;">
-                </button>
-              </form>
-            </div>
-        </section>
+                <div class="hero-content">
+                    <h1>Find Your Best Designer</h1>
+                </div>
+                <div class="search-section">
+                    <div class="search-bar">
+                      <span class="search-icon"><img src="images/icon/search.png"></span>
+                      <form action="/search" method="GET" style="display:flex; align-items:center; flex:1; gap:10px;">
+                        <input type="text" name="q" placeholder=" Search for a category, artist, or service" style="flex:1; border:none; background:transparent; outline:none; font-size:16px; color:#333;">
+                        <button type="submit" style="background:transparent; border:none; cursor:pointer; color:#666; font-size:16px; padding:0; display:flex; align-items:center;">
+                        </button>
+                      </form>
+                    </div>
+                </div>
          
-        <!-- Hero Section -->
-                  <div class="hero-image">
-                <img src="images/banner.svg" alt="Creative workspace">
+                <!-- Hero Section -->
+                <div class="hero-image">
+                    <img src="images/banner.svg" alt="Creative workspace">
+                </div>
+              </section>
+            @endif
             </div>
-        </section>
-        @endif
 
         @if(session('success'))
           <div style="background:#4caf50;color:white;padding:10px;border-radius:8px;margin:12px 0">{{ session('success') }}</div>
@@ -1330,6 +1806,93 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
     }
   })();
 </script>
+
+<!-- Mobile Category Button (only visible on mobile) -->
+<button class="mobile-category-btn" onclick="showMobileCategoryModal()" aria-label="Show categories">
+    <img src="/images/icon/kategori.png" alt="Categories">
+</button>
+
+<!-- Mobile Category Modal -->
+<div class="mobile-category-modal" id="mobileCategoryModal">
+    <div class="mobile-category-header">
+        <h3>Categories</h3>
+        <button class="mobile-category-close" onclick="hideMobileCategoryModal()" aria-label="Close">×</button>
+    </div>
+    <div class="mobile-category-list">
+        <a href="/category/graphic-design" class="mobile-category-item">
+            <img src="/images/graphic.png" alt="Graphic Design" class="mobile-category-icon">
+            <span class="mobile-category-name">Graphic Design</span>
+        </a>
+        <a href="/category/illustration" class="mobile-category-item">
+            <img src="/images/ILUSTRASI.png" alt="Illustration" class="mobile-category-icon">
+            <span class="mobile-category-name">Illustration</span>
+        </a>
+        <a href="/category/photography" class="mobile-category-item">
+            <img src="/images/fotografi.png" alt="Photography" class="mobile-category-icon">
+            <span class="mobile-category-name">Photography</span>
+        </a>
+        <a href="/category/typography" class="mobile-category-item">
+            <img src="/images/tipografi.png" alt="Typography" class="mobile-category-icon">
+            <span class="mobile-category-name">Typography</span>
+        </a>
+        <a href="/category/ui-ux" class="mobile-category-item">
+            <img src="/images/UI.png" alt="UI/UX" class="mobile-category-icon">
+            <span class="mobile-category-name">UI/UX</span>
+        </a>
+        <a href="/category/visual-identity" class="mobile-category-item">
+            <img src="/images/visual.png" alt="Visual Identity" class="mobile-category-icon">
+            <span class="mobile-category-name">Visual Identity</span>
+        </a>
+    </div>
+</div>
+
+<!-- Mobile Category Modal Backdrop -->
+<div class="mobile-modal-backdrop" id="mobileCategoryBackdrop" onclick="hideMobileCategoryModal()"></div>
+
+<script>
+    function showMobileCategoryModal() {
+        const modal = document.getElementById('mobileCategoryModal');
+        const backdrop = document.getElementById('mobileCategoryBackdrop');
+        if (modal && backdrop) {
+            modal.classList.add('show');
+            backdrop.classList.add('show');
+        }
+    }
+
+    function hideMobileCategoryModal() {
+        const modal = document.getElementById('mobileCategoryModal');
+        const backdrop = document.getElementById('mobileCategoryBackdrop');
+        if (modal && backdrop) {
+            modal.classList.remove('show');
+            backdrop.classList.remove('show');
+        }
+    }
+
+    // Close category modal when clicking backdrop
+    document.addEventListener('DOMContentLoaded', function() {
+        // Aggressively ensure all backdrops and modals are hidden on page load
+        setTimeout(() => {
+            const allBackdrops = document.querySelectorAll('.mobile-modal-backdrop, .mobile-panel-backdrop, .mobile-upload-backdrop');
+            allBackdrops.forEach(backdrop => {
+                backdrop.classList.remove('show');
+                backdrop.style.display = 'none';
+            });
+            
+            const allModals = document.querySelectorAll('.mobile-category-modal, .mobile-notification-panel, .mobile-user-menu, .mobile-upload-modal, .mobile-upload-form-modal');
+            allModals.forEach(modal => {
+                modal.classList.remove('show');
+            });
+        }, 0);
+        
+        const backdrop = document.getElementById('mobileCategoryBackdrop');
+        if (backdrop) {
+            backdrop.addEventListener('click', hideMobileCategoryModal);
+        }
+    });
+</script>
+
+<x-mobile-header />
+<x-mobile-bottom-bar />
 
 </body>
 

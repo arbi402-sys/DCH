@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Search Results - DCH</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <x-mobile-styles />
     <style>
         body {
             font-family: 'Manrope', sans-serif;
@@ -44,7 +45,7 @@
 
         .category-asset {
             width:130px;
-            height:86px;
+            height:150px;
             border-radius:12px;
             overflow:hidden;
             background: #ffffffff;
@@ -261,9 +262,156 @@
             width: 72px;
             z-index: 9998;
         }
+
+        /* Mobile Category Button */
+        .mobile-category-btn {
+            display: none !important;
+        }
+
+        .mobile-category-modal {
+            display: none !important;
+        }
+
+        .mobile-modal-backdrop {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-category-btn {
+                display: flex !important;
+                position: fixed;
+                bottom: 90px;
+                right: 16px;
+                width: 56px;
+                height: 56px;
+                background: #ff6ec4;
+                border-radius: 50%;
+                border: none;
+                box-shadow: 0 4px 12px rgba(255, 110, 196, 0.4);
+                cursor: pointer;
+                z-index: 200;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.3s ease;
+            }
+
+            .mobile-category-btn:active {
+                transform: scale(0.95);
+            }
+
+            .mobile-category-btn img {
+                width: 24px;
+                height: 24px;
+                filter: brightness(0) invert(1);
+            }
+
+            /* Category Modal */
+            .mobile-category-modal {
+                display: block !important;
+                position: fixed;
+                bottom: -100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border-radius: 20px 20px 0 0;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+                z-index: 251;
+                transition: bottom 0.3s ease;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            .mobile-category-modal.show {
+                bottom: 0;
+            }
+
+            .mobile-modal-backdrop {
+                display: block !important;
+            }
+
+            .mobile-modal-backdrop.show {
+                display: block !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 250;
+            }
+
+            .mobile-category-header {
+                padding: 16px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 1;
+            }
+
+            .mobile-category-header h3 {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 600;
+            }
+
+            .mobile-category-close {
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                padding: 0;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #666;
+            }
+
+            .mobile-category-list {
+                padding: 8px 0;
+            }
+
+            .mobile-category-item {
+                padding: 16px 20px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                text-decoration: none;
+                color: #333;
+                transition: background 0.2s;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .mobile-category-item:hover {
+                background: #f9f9f9;
+            }
+
+            .mobile-category-item:active {
+                background: #f0f0f0;
+            }
+
+            .mobile-category-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                object-fit: cover;
+                flex-shrink: 0;
+            }
+
+            .mobile-category-name {
+                font-size: 16px;
+                font-weight: 500;
+            }
+        }
     </style>
 </head>
 <body>
+    <x-mobile-header />
     <x-navbar></x-navbar>
     <div class="container">
         <x-sidebar />
@@ -307,6 +455,38 @@
                 $categoryAsset = '/images/UI.png';
               } elseif (Str::contains($source, ['ilustr', 'illustr', 'ilustrasi', 'illustration'])) {
                 $categoryAsset = '/images/ILUSTRASI.png';
+              } elseif (Str::contains($source, ['graphic', 'graphic-design', 'graphic design'])) {
+                if (file_exists(public_path('images/graphic.png'))) {
+                  $categoryAsset = '/images/graphic.png';
+                } elseif (file_exists(public_path('images/graphic.svg'))) {
+                  $categoryAsset = '/images/graphic.svg';
+                } else {
+                  $categoryAsset = '/images/categories/placeholder.svg';
+                }
+              } elseif (Str::contains($source, ['typography','tipografi','typografi'])) {
+                if (file_exists(public_path('images/tipografi.png'))) {
+                  $categoryAsset = '/images/tipografi.png';
+                } elseif (file_exists(public_path('images/tipografi.svg'))) {
+                  $categoryAsset = '/images/tipografi.svg';
+                } else {
+                  $categoryAsset = '/images/categories/placeholder.svg';
+                }
+              } elseif (Str::contains($source, ['visual identity','visual','identity'])) {
+                if (file_exists(public_path('images/visual.png'))) {
+                  $categoryAsset = '/images/visual.png';
+                } elseif (file_exists(public_path('images/visual.svg'))) {
+                  $categoryAsset = '/images/visual.svg';
+                } else {
+                  $categoryAsset = '/images/categories/placeholder.svg';
+                }
+              } elseif (Str::contains($source, ['photograph','photography','fotografi','photo'])) {
+                if (file_exists(public_path('images/fotografi.png'))) {
+                  $categoryAsset = '/images/fotografi.png';
+                } elseif (file_exists(public_path('images/fotografi.svg'))) {
+                  $categoryAsset = '/images/fotografi.svg';
+                } else {
+                  $categoryAsset = '/images/categories/placeholder.svg';
+                }
               } else {
                 // Prefer category-specific files in public/images/categories/{slug-or-name}.png|svg
                 $candidate = Str::slug($slug ?: $name ?: ($pageTitle ?? ''));
@@ -678,5 +858,91 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
   })();
     </script>
     <x-sidebar-assets />
+
+    <!-- Mobile Category Button (only visible on mobile) -->
+    <button class="mobile-category-btn" onclick="showMobileCategoryModal()" aria-label="Show categories">
+        <img src="/images/icon/kategori.png" alt="Categories">
+    </button>
+
+    <!-- Mobile Category Modal -->
+    <div class="mobile-category-modal" id="mobileCategoryModal">
+        <div class="mobile-category-header">
+            <h3>Categories</h3>
+            <button class="mobile-category-close" onclick="hideMobileCategoryModal()" aria-label="Close">×</button>
+        </div>
+        <div class="mobile-category-list">
+            <a href="/category/graphic-design" class="mobile-category-item">
+                <img src="/images/graphic.png" alt="Graphic Design" class="mobile-category-icon">
+                <span class="mobile-category-name">Graphic Design</span>
+            </a>
+            <a href="/category/illustration" class="mobile-category-item">
+                <img src="/images/ILUSTRASI.png" alt="Illustration" class="mobile-category-icon">
+                <span class="mobile-category-name">Illustration</span>
+            </a>
+            <a href="/category/photography" class="mobile-category-item">
+                <img src="/images/fotografi.png" alt="Photography" class="mobile-category-icon">
+                <span class="mobile-category-name">Photography</span>
+            </a>
+            <a href="/category/typography" class="mobile-category-item">
+                <img src="/images/tipografi.png" alt="Typography" class="mobile-category-icon">
+                <span class="mobile-category-name">Typography</span>
+            </a>
+            <a href="/category/ui-ux" class="mobile-category-item">
+                <img src="/images/UI.png" alt="UI/UX" class="mobile-category-icon">
+                <span class="mobile-category-name">UI/UX</span>
+            </a>
+            <a href="/category/visual-identity" class="mobile-category-item">
+                <img src="/images/visual.png" alt="Visual Identity" class="mobile-category-icon">
+                <span class="mobile-category-name">Visual Identity</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Mobile Category Modal Backdrop -->
+    <div class="mobile-modal-backdrop" id="mobileCategoryBackdrop" onclick="hideMobileCategoryModal()"></div>
+
+    <script>
+        function showMobileCategoryModal() {
+            const modal = document.getElementById('mobileCategoryModal');
+            const backdrop = document.getElementById('mobileCategoryBackdrop');
+            if (modal && backdrop) {
+                modal.classList.add('show');
+                backdrop.classList.add('show');
+            }
+        }
+
+        function hideMobileCategoryModal() {
+            const modal = document.getElementById('mobileCategoryModal');
+            const backdrop = document.getElementById('mobileCategoryBackdrop');
+            if (modal && backdrop) {
+                modal.classList.remove('show');
+                backdrop.classList.remove('show');
+            }
+        }
+
+        // Close category modal when clicking backdrop
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aggressively ensure all backdrops and modals are hidden on page load
+            setTimeout(() => {
+                const allBackdrops = document.querySelectorAll('.mobile-modal-backdrop, .mobile-panel-backdrop, .mobile-upload-backdrop');
+                allBackdrops.forEach(backdrop => {
+                    backdrop.classList.remove('show');
+                    backdrop.style.display = 'none';
+                });
+                
+                const allModals = document.querySelectorAll('.mobile-category-modal, .mobile-notification-panel, .mobile-user-menu, .mobile-upload-modal, .mobile-upload-form-modal');
+                allModals.forEach(modal => {
+                    modal.classList.remove('show');
+                });
+            }, 0);
+            
+            const backdrop = document.getElementById('mobileCategoryBackdrop');
+            if (backdrop) {
+                backdrop.addEventListener('click', hideMobileCategoryModal);
+            }
+        });
+    </script>
+
+    <x-mobile-bottom-bar />
 </body>
 </html>

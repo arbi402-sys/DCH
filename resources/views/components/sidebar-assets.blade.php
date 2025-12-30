@@ -151,7 +151,7 @@
 </style>
 
 <script>
-// Shared sidebar JS (works without visible toggle)
+// Shared sidebar JS (hover-to-open instead of click)
 (function(){
   const sidebar = document.getElementById('appSidebar');
   const closeBtnSidebar = document.getElementById('sidebarClose');
@@ -172,12 +172,20 @@
     sidebar.setAttribute('aria-hidden','true');
     if(closeBtnSidebar) closeBtnSidebar.style.display='none';
   }
-  // click inside collapsed sidebar opens it
-  sidebar.addEventListener('click', function(e){ if(!sidebar.classList.contains('open')){ const brandAnchor = e.target.closest('.brand-link'); if(brandAnchor) e.preventDefault(); openSidebar(); e.stopPropagation(); } });
+  // hover over sidebar opens it (mouseenter)
+  sidebar.addEventListener('mouseenter', function(e){ 
+    if(!sidebar.classList.contains('open')){ 
+      openSidebar(); 
+    } 
+  });
+  // mouse leaving sidebar closes it (mouseleave)
+  sidebar.addEventListener('mouseleave', function(e){ 
+    if(sidebar.classList.contains('open')){ 
+      closeSidebar(); 
+    } 
+  });
   // close button mobile
   if(closeBtnSidebar) closeBtnSidebar.addEventListener('click', function(e){ e.stopPropagation(); closeSidebar(); });
-  // click outside closes
-  document.addEventListener('click', function(e){ const clickedInsideSidebar = sidebar.contains(e.target); if(!clickedInsideSidebar && sidebar.classList.contains('open')) closeSidebar(); });
   // esc to close
   document.addEventListener('keydown', function(e){ if(e.key==='Escape' && sidebar.classList.contains('open')) closeSidebar(); });
   window.addEventListener('resize', function(){ if(sidebar.classList.contains('open')){ if(!isSmall()) containerEl.classList.add('sidebar-open'); else containerEl.classList.remove('sidebar-open'); } });
