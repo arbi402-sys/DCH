@@ -34,17 +34,19 @@
 
         /* Hero Section */
         .hero {
-            padding: 20px 50px;
+            padding: 20px 80px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr 2.5fr;
+            gap: 40px;
             align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         .hero-content h1 {
             font-size: 36px;
             color: #333;
-            margin: 0;
+            margin: 0 0 12px 0;
             line-height: 1.2;
         }
 
@@ -52,6 +54,8 @@
             background: #e0e0e0;
             padding: 0px 0px;
             height: 400px;
+            width: 100%;
+           
             border-top-left-radius: 100px;
             border-bottom-right-radius: 100px;
             overflow: hidden;
@@ -68,6 +72,7 @@
         .search-section {
             display: flex;
             align-items: left;
+            margin-top: 0;
         }
 
         .search-bar {
@@ -1117,15 +1122,15 @@ Group 20
               <section class="hero">
                 <div class="hero-content">
                     <h1>Find Your Best Designer</h1>
-                </div>
-                <div class="search-section">
-                    <div class="search-bar">
-                      <span class="search-icon"><img src="images/icon/search.png"></span>
-                      <form action="/search" method="GET" style="display:flex; align-items:center; flex:1; gap:10px;">
-                        <input type="text" name="q" placeholder=" Search for a category, artist, or service" style="flex:1; border:none; background:transparent; outline:none; font-size:16px; color:#333;">
-                        <button type="submit" style="background:transparent; border:none; cursor:pointer; color:#666; font-size:16px; padding:0; display:flex; align-items:center;">
-                        </button>
-                      </form>
+                    <div class="search-section">
+                        <div class="search-bar">
+                          <span class="search-icon"><img src="images/icon/search.png"></span>
+                          <form action="/search" method="GET" style="display:flex; align-items:center; flex:1; gap:10px;">
+                            <input type="text" name="q" placeholder=" Search for a category, artist, or service" style="flex:1; border:none; background:transparent; outline:none; font-size:16px; color:#333;">
+                            <button type="submit" style="background:transparent; border:none; cursor:pointer; color:#666; font-size:16px; padding:0; display:flex; align-items:center;">
+                            </button>
+                          </form>
+                        </div>
                     </div>
                 </div>
          
