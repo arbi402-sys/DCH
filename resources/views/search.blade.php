@@ -433,7 +433,7 @@
               use \Illuminate\Support\Str;
 
               // Default placeholder
-              $categoryAsset = '/images/categories/placeholder.svg';
+              $categoryAsset = '/images/categories/notfound.svg';
 
               // Support when $category is either a slug string or a Category model
               $slug = '';
@@ -461,7 +461,7 @@
                 } elseif (file_exists(public_path('images/graphic.svg'))) {
                   $categoryAsset = '/images/graphic.svg';
                 } else {
-                  $categoryAsset = '/images/categories/placeholder.svg';
+                  $categoryAsset = '/images/categories/notfound.svg';
                 }
               } elseif (Str::contains($source, ['typography','tipografi','typografi'])) {
                 if (file_exists(public_path('images/tipografi.png'))) {
@@ -469,7 +469,7 @@
                 } elseif (file_exists(public_path('images/tipografi.svg'))) {
                   $categoryAsset = '/images/tipografi.svg';
                 } else {
-                  $categoryAsset = '/images/categories/placeholder.svg';
+                  $categoryAsset = '/images/categories/notfound.svg';
                 }
               } elseif (Str::contains($source, ['visual identity','visual','identity'])) {
                 if (file_exists(public_path('images/visual.png'))) {
@@ -477,7 +477,7 @@
                 } elseif (file_exists(public_path('images/visual.svg'))) {
                   $categoryAsset = '/images/visual.svg';
                 } else {
-                  $categoryAsset = '/images/categories/placeholder.svg';
+                  $categoryAsset = '/images/categories/notfound.svg';
                 }
               } elseif (Str::contains($source, ['photograph','photography','fotografi','photo'])) {
                 if (file_exists(public_path('images/fotografi.png'))) {
@@ -485,7 +485,7 @@
                 } elseif (file_exists(public_path('images/fotografi.svg'))) {
                   $categoryAsset = '/images/fotografi.svg';
                 } else {
-                  $categoryAsset = '/images/categories/placeholder.svg';
+                  $categoryAsset = '/images/categories/notfound.svg';
                 }
               } else {
                 // Prefer category-specific files in public/images/categories/{slug-or-name}.png|svg
@@ -498,7 +498,7 @@
                   } elseif (file_exists(public_path($svg))) {
                     $categoryAsset = '/' . $svg;
                   } else {
-                    $categoryAsset = '/images/categories/placeholder.svg';
+                    $categoryAsset = '/images/categories/notfound.svg';
                   }
                 }
               }

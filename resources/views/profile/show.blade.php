@@ -411,7 +411,7 @@
                                 <div style="font-weight:700">{{ $art->title }}</div>
                                 <div style="font-size:13px; color:#666">{{ $art->category?->name }}</div>
                             </div>
-                            <div class="portfolio-meta" style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+                            <div class="portfolio-meta" style="display:flex;gap:10px;align-items:center;margin-top:8px;margin-left:10px;">
                                 <span class="thumb-like" style="display:flex;align-items:center;gap:6px;">
                                     <img src="/images/icon/like.png" alt="like" style="width:16px;height:16px"/>
                                     <span class="thumb-like-count">{{ $likeCount }}</span>
