@@ -13,7 +13,6 @@ Platform portofolio dan komunitas kreatif berbasis **Laravel 12** bagi mahasiswa
 - **Use Case Diagram:** [docs/use-case.puml](docs/use-case.puml) (standar UML PlantUML) dan [docs/use-case.mmd](docs/use-case.mmd) (alternatif Mermaid).
 - **Diagram Arsitektur Web:** [docs/architecture.mmd](docs/architecture.mmd) — arsitektur lapisan Client, Web Server/PHP, Laravel 12 MVC, serta Database & Local Storage.
 - **Diagram Blackbox Testing:** [docs/blackbox-testing.mmd](docs/blackbox-testing.mmd) — ringkasan cakupan dan hasil pengujian fungsional (34/34 lulus).
-- **Narasi Akademik Diagram:** [docs/narasi-diagram.md](docs/narasi-diagram.md) — narasi ilmiah baku pendamping seluruh diagram untuk naskah jurnal.
 - **Kebutuhan Server & Batas Unggah:** [docs/server-requirements.md](docs/server-requirements.md) — panduan penyelarasan batas unggah **10 MB** dengan `upload_max_filesize`, `post_max_size`, dan `client_max_body_size`.
 
 ## Instalasi Lokal
