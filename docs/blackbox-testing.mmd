@@ -1,0 +1,22 @@
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '13px'}, 'flowchart': {'nodeSpacing': 20, 'rankSpacing': 28}}}%%
+flowchart TB
+    Start["Pengujian Blackbox Digital Creative Hub (DCH)<br/>(HTTP Feature Testing — Laravel Pest/PHPUnit)"]
+
+    subgraph Modules["Cakupan Modul Pengujian (Total: 34 Skenario | 262 Assertions)"]
+        direction LR
+        subgraph Col1["Modul Autentikasi, Profil & Interaksi"]
+            M1["1. Autentikasi & Profil — 7/7 Lulus<br/>Registrasi, Akses Role, Update Profil<br/>(IG, Location/City, Avatar, Cover)"]
+            M2["2. Interaksi Karya — 3/3 Lulus<br/>Like/Unlike, Save/Unsave<br/>(Konsisten Pasca-Reload), Share"]
+            M3["3. CRUD Karya & Artikel — 11/11 Lulus<br/>Unggah, Tampil Publik, Hapus<br/>(Otorisasi Pemilik vs HTTP 403)"]
+        end
+        subgraph Col2["Modul HKI, Moderasi & Validasi Batas Unggah"]
+            M4["4. HKI & Pelaporan — 3/3 Lulus<br/>Wajib Lisensi & Orisinalitas,<br/>Laporan Plagiarisme & Tinjauan Admin"]
+            M5["5. Kurasi & Moderasi — 4/4 Lulus<br/>Status Pending & Anti-Bypass, Role 403,<br/>Approve/Reject + Catatan, Kompatibilitas Data"]
+            M6["6. Batas Unggah 10 MB & Umum — 6/6 Lulus<br/>Boundary 10.240 KB vs 10.241 KB,<br/>Format Gambar Valid/Invalid, Uji Dasar"]
+        end
+    end
+
+    Result["Hasil Akhir Pengujian Blackbox<br/>34 / 34 Skenario Lulus (100%) | 0 Gagal (0%)"]
+
+    Start --> M1 & M2 & M3 & M4 & M5 & M6
+    M1 & M2 & M3 & M4 & M5 & M6 --> Result

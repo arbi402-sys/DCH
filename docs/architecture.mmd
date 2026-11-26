@@ -1,0 +1,31 @@
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '13px'}, 'flowchart': {'nodeSpacing': 25, 'rankSpacing': 30}}}%%
+flowchart TB
+    subgraph L1["1. Client Layer"]
+        Client["Web Browser (Desktop & Mobile)<br/>Blade SSR (HTML/CSS/JS) + Fetch API + Google Fonts"]
+    end
+
+    subgraph L2["2. Web Server & Runtime Layer"]
+        Server["Apache / Nginx + PHP 8.2+<br/>Limit: client_max_body_size 16M | upload_max_filesize 12M"]
+    end
+
+    subgraph L3["3. Application Layer (Laravel 12 MVC)"]
+        Router["Router & Middleware<br/>routes/web.php | Session | CSRF | auth | admin Gate"]
+        Ctrl["Controllers & Validation<br/>Explore/Search (Approved) | Profile (IG/Lokasi)<br/>Upload (HKI + 10 MB + Pending) | Like/Save/Report | Moderation"]
+        Model["Eloquent ORM Models<br/>User, Artwork, Article, Category, ArtworkReport<br/>Pivot: artwork_likes, artwork_saves, follows"]
+        View["Blade Views (HTML) & JSON Response"]
+
+        Router --> Ctrl --> Model
+        Ctrl --> View
+    end
+
+    subgraph L4["4. Data & Local Storage Layer"]
+        DB[("MySQL / SQLite DB<br/>Data Inti, Pivot, Laporan & Session")]
+        Disk[("Local Storage (storage/app/public)<br/>via symlink public/storage")]
+    end
+
+    Client <--> |"HTTP/HTTPS & AJAX (CSRF)"| Server
+    Server --> Router
+    View --> Server
+    Model <--> DB
+    Ctrl --> |"Simpan Media (Disk: public)"| Disk
+    Server -. "Sajikan /storage/*" .-> Disk

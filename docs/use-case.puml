@@ -1,0 +1,54 @@
+@startuml DCH_Use_Case_Compact
+left to right direction
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 13
+skinparam nodesep 14
+skinparam ranksep 36
+skinparam usecase {
+    BackgroundColor #F8FAFC
+    BorderColor #334155
+    ArrowColor #475569
+}
+
+actor "Pengunjung\n(Guest)" as Guest
+actor "Pengguna Terdaftar\n(Mahasiswa/Dosen/Klien)" as User
+actor "Admin / Kurator\n(admin)" as Admin
+
+Guest <|-- User
+User <|-- Admin
+
+rectangle "Digital Creative Hub (DCH)" {
+    usecase "UC1: Jelajah, Cari & Detail\nKarya Publik (Approved)" as UC1
+    usecase "UC2: Baca Artikel &\nProfil Publik" as UC2
+    usecase "UC3: Registrasi & Login\n(Bukti Role Mhs/Dosen 2 MB)" as UC3
+
+    usecase "UC4: Kelola Profil\n(IG, Lokasi/Kota, Avatar)" as UC4
+    usecase "UC5: Unggah & Kelola Karya\n(Status Awal: Pending)" as UC5
+    usecase "UC6: Validasi HKI, Orisinalitas\n& Batas File 10 MB" as UC6
+    usecase "UC7: Unggah & Kelola Artikel\n(Maks. 10 MB, Status: Pending)" as UC7
+    usecase "UC8: Like/Unlike, Save/Unsave\n& Follow Kreator" as UC8
+    usecase "UC9: Laporkan Dugaan\nPlagiarisme / HKI" as UC9
+
+    usecase "UC10: Moderasi Karya & Artikel\n(Approve / Reject + Catatan)" as UC10
+    usecase "UC11: Tinjau Laporan HKI\n& Takedown Karya" as UC11
+}
+
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+
+User --> UC4
+User --> UC5
+User --> UC7
+User --> UC8
+User --> UC9
+
+Admin --> UC10
+Admin --> UC11
+
+UC5 .> UC6 : <<include>>
+UC9 .> UC1 : <<extend>>
+UC8 .> UC1 : <<extend>>
+@enduml

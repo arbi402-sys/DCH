@@ -1,140 +1,89 @@
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '13px'}}}%%
 erDiagram
     USERS {
         bigint id PK
-        string name
-        string first_name
-        string last_name
-        string email UK
-        timestamp email_verified_at
         string username UK
+        string email UK
         string role "mahasiswa|dosen|client|admin"
-        string proof_image
-        string avatar
-        string cover_image
-        string bio
-        string headline
-        string institution
         string location
         string city
-        string website
         string ig
-        string url
-        string category
-        boolean newsletter
-        integer last_activity
-        string password
-        string remember_token
+        string avatar
+        string cover_image
         timestamp created_at
-        timestamp updated_at
     }
 
     CATEGORIES {
         bigint id PK
         string name
         string slug UK
-        timestamp created_at
-        timestamp updated_at
     }
 
     ARTWORKS {
         bigint id PK
         bigint user_id FK
-        bigint category_id FK "nullable"
+        bigint category_id FK
         string title
-        text description
         string image_path
-        int share_count "default 0"
-        string license "default all_rights_reserved"
-        boolean originality_confirmed "default false"
-        timestamp copyright_confirmed_at "nullable"
+        int share_count
+        string license "HKI"
+        boolean originality_confirmed
         string status "pending|approved|rejected"
-        text moderation_note "nullable"
-        bigint moderated_by FK "nullable -> users.id"
-        timestamp moderated_at "nullable"
+        text moderation_note
+        bigint moderated_by FK
         timestamp created_at
-        timestamp updated_at
     }
 
     ARTWORK_LIKES {
         bigint id PK
-        bigint user_id FK "UK(user_id, artwork_id)"
-        bigint artwork_id FK "UK(user_id, artwork_id)"
+        bigint user_id FK "UK(user,artwork)"
+        bigint artwork_id FK "UK(user,artwork)"
         timestamp created_at
-        timestamp updated_at
     }
 
     ARTWORK_SAVES {
         bigint id PK
-        bigint user_id FK "UK(user_id, artwork_id)"
-        bigint artwork_id FK "UK(user_id, artwork_id)"
+        bigint user_id FK "UK(user,artwork)"
+        bigint artwork_id FK "UK(user,artwork)"
         timestamp created_at
-        timestamp updated_at
     }
 
     ARTWORK_REPORTS {
         bigint id PK
         bigint artwork_id FK
-        bigint reporter_id FK "-> users.id"
+        bigint reporter_id FK
         string reason
-        text details
         string status "open|reviewed|resolved|dismissed"
-        bigint reviewed_by FK "nullable -> users.id"
-        timestamp reviewed_at "nullable"
-        text resolution_note "nullable"
+        bigint reviewed_by FK
         timestamp created_at
-        timestamp updated_at
     }
 
     ARTICLES {
         bigint id PK
         bigint user_id FK
-        bigint category_id FK "nullable"
+        bigint category_id FK
         string title
-        text body
-        string image_path "nullable"
         string status "pending|approved|rejected"
-        text moderation_note "nullable"
-        bigint moderated_by FK "nullable -> users.id"
-        timestamp moderated_at "nullable"
+        text moderation_note
+        bigint moderated_by FK
         timestamp created_at
-        timestamp updated_at
     }
 
     FOLLOWS {
         bigint id PK
-        bigint follower_id FK "UK(follower_id, followed_id)"
-        bigint followed_id FK "UK(follower_id, followed_id)"
+        bigint follower_id FK "UK"
+        bigint followed_id FK "UK"
         timestamp created_at
-        timestamp updated_at
     }
 
-    FORUMS {
-        bigint id PK
-        string title
-        text excerpt
-        text body
-        timestamp published_at "nullable"
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    USERS ||--o{ ARTWORKS : "uploads"
-    CATEGORIES ||--o{ ARTWORKS : "categorizes"
-    USERS ||--o{ ARTWORKS : "moderates (moderated_by)"
-
-    USERS ||--o{ ARTWORK_LIKES : "likes"
-    ARTWORKS ||--o{ ARTWORK_LIKES : "liked_by"
-
-    USERS ||--o{ ARTWORK_SAVES : "saves"
-    ARTWORKS ||--o{ ARTWORK_SAVES : "saved_by"
-
-    USERS ||--o{ ARTWORK_REPORTS : "reports (reporter_id)"
-    ARTWORKS ||--o{ ARTWORK_REPORTS : "reported_in"
-    USERS ||--o{ ARTWORK_REPORTS : "reviews (reviewed_by)"
-
-    USERS ||--o{ ARTICLES : "authors"
-    CATEGORIES ||--o{ ARTICLES : "categorizes"
-    USERS ||--o{ ARTICLES : "moderates (moderated_by)"
-
-    USERS ||--o{ FOLLOWS : "follows (follower_id)"
-    USERS ||--o{ FOLLOWS : "followed_by (followed_id)"
+    USERS ||--o{ ARTWORKS : uploads
+    CATEGORIES ||--o{ ARTWORKS : groups
+    USERS ||--o{ ARTWORK_LIKES : likes
+    ARTWORKS ||--o{ ARTWORK_LIKES : liked_by
+    USERS ||--o{ ARTWORK_SAVES : saves
+    ARTWORKS ||--o{ ARTWORK_SAVES : saved_by
+    USERS ||--o{ ARTWORK_REPORTS : reports
+    ARTWORKS ||--o{ ARTWORK_REPORTS : reported
+    USERS ||--o{ ARTICLES : authors
+    CATEGORIES ||--o{ ARTICLES : groups
+    USERS ||--o{ FOLLOWS : follows

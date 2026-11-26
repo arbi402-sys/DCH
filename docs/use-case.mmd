@@ -1,0 +1,30 @@
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '13px'}, 'flowchart': {'nodeSpacing': 20, 'rankSpacing': 35}}}%%
+flowchart LR
+    Guest(["Pengunjung<br/>(Guest)"])
+    User(["Pengguna Terdaftar<br/>(Mhs / Dosen / Klien)"])
+    Admin(["Admin / Kurator<br/>(admin)"])
+
+    User -. "mewarisi" .-> Guest
+    Admin -. "mewarisi" .-> User
+
+    subgraph DCH["Digital Creative Hub (DCH)"]
+        UC1(["UC1: Jelajah, Cari &<br/>Detail Karya (Approved)"])
+        UC2(["UC2: Baca Artikel &<br/>Profil Publik"])
+        UC3(["UC3: Registrasi & Login<br/>(Bukti Role 2 MB)"])
+        UC4(["UC4: Kelola Profil<br/>(IG, Lokasi/Kota, Avatar)"])
+        UC5(["UC5: Unggah & Kelola Karya<br/>(Status: Pending)"])
+        UC6(["UC6: Validasi HKI, Orisinalitas<br/>& Batas 10 MB"])
+        UC7(["UC7: Unggah & Kelola Artikel<br/>(Maks. 10 MB, Pending)"])
+        UC8(["UC8: Like/Unlike, Save/Unsave<br/>& Follow"])
+        UC9(["UC9: Laporkan Dugaan<br/>Plagiarisme / HKI"])
+        UC10(["UC10: Moderasi Karya & Artikel<br/>(Approve/Reject + Catatan)"])
+        UC11(["UC11: Tinjau Laporan HKI<br/>& Takedown Karya"])
+    end
+
+    Guest --> UC1 & UC2 & UC3
+    User --> UC4 & UC5 & UC7 & UC8 & UC9
+    Admin --> UC10 & UC11
+
+    UC5 -. "«include»" .-> UC6
+    UC8 -. "«extend»" .-> UC1
+    UC9 -. "«extend»" .-> UC1
