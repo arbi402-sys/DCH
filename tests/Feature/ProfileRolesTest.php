@@ -2,15 +2,16 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\TestCase;
 
 class ProfileRolesTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @dataProvider rolesProvider */
+    #[DataProvider('rolesProvider')]
     public function test_profile_page_accessible_by_role($role)
     {
         $user = User::factory()->create(['role' => $role, 'username' => $role . '_user']);

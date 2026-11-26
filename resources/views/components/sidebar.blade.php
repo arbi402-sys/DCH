@@ -48,6 +48,16 @@
             <div class="sidebar-icon"><img src="/images/icon/notifikasi.png" alt="notification icon"></div>
             <div class="sidebar-label">Notification</div>
         </li>
+        @auth
+            @if(auth()->user()->isAdmin())
+            <li class="sidebar-item" title="Panel Moderasi">
+                <a href="{{ route('admin.moderation.index') }}" style="all:unset;display:flex;align-items:center;gap:12px;width:100%;padding:8px 0;cursor:pointer;">
+                    <div class="sidebar-icon"><img src="/images/icon/setting.png" alt="moderation icon"></div>
+                    <div class="sidebar-label">Moderasi</div>
+                </a>
+            </li>
+            @endif
+        @endauth
     </ul>
 
     <!-- Notification Panel -->
@@ -68,12 +78,16 @@
 
     <ul class="sidebar-list" style="margin-bottom:16px;">
         <li class="sidebar-item" title="Setting">
-            <div class="sidebar-icon"><img src="/images/icon/setting.png" alt="setting icon"></div>
-            <div class="sidebar-label">Setting</div>
+            <a href="{{ route('not-found') }}" style="all:unset;display:flex;align-items:center;gap:12px;width:100%;padding:8px 0;cursor:pointer;">
+                <div class="sidebar-icon"><img src="/images/icon/setting.png" alt="setting icon"></div>
+                <div class="sidebar-label">Setting</div>
+            </a>
         </li>
         <li class="sidebar-item" title="Help">
-            <div class="sidebar-icon"><img src="/images/icon/help.png" alt="help icon"></div>
-            <div class="sidebar-label">Help</div>
+            <a href="{{ route('not-found') }}" style="all:unset;display:flex;align-items:center;gap:12px;width:100%;padding:8px 0;cursor:pointer;">
+                <div class="sidebar-icon"><img src="/images/icon/help.png" alt="help icon"></div>
+                <div class="sidebar-label">Help</div>
+            </a>
         </li>
         @auth
         <li class="sidebar-item" title="Logout">
@@ -90,8 +104,9 @@
     @auth
     <!-- Upload Artwork Modal -->
     <div id="uploadArtworkModal" style="display:none; position:fixed; inset:0; align-items:center; justify-content:center; background:rgba(0,0,0,0.35); z-index:999;">
-        <div style="background:white;padding:18px;border-radius:10px;max-width:760px;width:96%;">
+        <div style="background:white;padding:18px;border-radius:10px;max-width:760px;width:96%;max-height:90vh;overflow-y:auto;">
             <h3>Upload Karya</h3>
+            <p style="font-size:12px;color:#666;margin:0 0 8px 0;">Karya yang diunggah akan berstatus <strong>Menunggu Persetujuan</strong> hingga ditinjau oleh admin/kurator.</p>
             <form method="POST" action="{{ route('upload.artwork') }}" enctype="multipart/form-data">
                 @csrf
                 <div style="margin-top:8px"><label>Title</label><input name="title" required style="width:100%"></div>
@@ -111,10 +126,28 @@
                         @endforeach
                     </div>
                 </div>
-                <div style="margin-top:8px"><label>Image</label><input type="file" name="image" accept="image/*" required style="width:100%"></div>
+                <div style="margin-top:8px">
+                    <label>Image</label>
+                    <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required style="width:100%">
+                    <small style="display:block;color:#666;margin-top:4px;">Format yang diizinkan: JPG, JPEG, PNG, WEBP. Maksimal ukuran berkas: 10 MB.</small>
+                </div>
+                <div style="margin-top:8px">
+                    <label for="sidebarArtworkLicense">Lisensi Karya (HKI)</label>
+                    <select id="sidebarArtworkLicense" name="license" required style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;">
+                        @foreach(\App\Models\Artwork::LICENSES as $licenseKey => $licenseLabel)
+                            <option value="{{ $licenseKey }}">{{ $licenseLabel }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div style="margin-top:8px"><label>Description</label><textarea name="description" rows="4" style="width:100%"></textarea></div>
+                <div style="margin-top:10px;background:#f8fafc;border:1px solid #e2e8f0;padding:10px;border-radius:8px;">
+                    <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer;">
+                        <input type="checkbox" name="originality_confirmed" value="1" required style="margin-top:3px;">
+                        <span>Saya menyatakan bahwa karya ini adalah hasil karya asli saya sendiri atau saya memiliki izin resmi dari pemegang hak cipta untuk mengunggahnya di Digital Creative Hub.</span>
+                    </label>
+                </div>
                 <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-                    <button type="button" onclick="hideUpload('artwork')" class="btn">Draft</button>
+                    <button type="button" onclick="hideUpload('artwork')" class="btn">Batal</button>
                     <button class="btn" type="submit">Upload</button>
                 </div>
             </form>
@@ -123,17 +156,23 @@
 
     <!-- Upload Article Modal -->
     <div id="uploadArticleModal" style="display:none; position:fixed; inset:0; align-items:center; justify-content:center; background:rgba(0,0,0,0.35); z-index:999;">
-        <div style="background:white;padding:18px;border-radius:10px;max-width:760px;width:96%;">
+        <div style="background:white;padding:18px;border-radius:10px;max-width:760px;width:96%;max-height:90vh;overflow-y:auto;">
             <h3>Upload Artikel</h3>
+            <p style="font-size:12px;color:#666;margin:0 0 8px 0;">Artikel baru akan berstatus <strong>Menunggu Persetujuan</strong> hingga ditinjau oleh admin/kurator.</p>
             <form method="POST" action="{{ route('upload.article') }}" enctype="multipart/form-data">
                 @csrf
                 <div style="margin-top:8px"><label>Title</label><input name="title" required style="width:100%"></div>
-                <div style="margin-top:8px;display:flex;gap:12px;align-items:center;"><div style="flex:1"><label>Cover Image (optional)</label><input type="file" name="image" accept="image/*"></div>
+                <div style="margin-top:8px;display:flex;gap:12px;align-items:center;">
+                    <div style="flex:1">
+                        <label>Cover Image (optional)</label>
+                        <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                        <small style="display:block;color:#666;margin-top:4px;">Format yang diizinkan: JPG, JPEG, PNG, WEBP. Maksimal ukuran berkas: 10 MB.</small>
+                    </div>
                 </div>
                 <div style="margin-top:8px"><label>Body</label><textarea name="body" rows="10" style="width:100%" required></textarea></div>
                 <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-                    <button type="button" onclick="hideUpload('article')" class="btn">Draft</button>
-                    <button class="btn" type="submit">Publish</button>
+                    <button type="button" onclick="hideUpload('article')" class="btn">Batal</button>
+                    <button class="btn" type="submit">Kirim Artikel</button>
                 </div>
             </form>
         </div>

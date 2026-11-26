@@ -217,6 +217,17 @@
         .row-two input { width:100% }
     </style>
 
+    @if ($errors->any())
+        <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:12px 16px;border-radius:8px;margin-bottom:14px;">
+            <strong>Ada kesalahan saat memperbarui profil:</strong>
+            <ul style="margin:6px 0 0 18px;padding:0;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="profile-cover" id="profileCover" style="background-image: url('{{ $user->cover_image ? asset('storage/'.$user->cover_image) : '/images/default-cover.png' }}')"></div>
 
     @auth
@@ -224,7 +235,8 @@
             <form id="coverUploadForm" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" style="display:none">
                 @csrf
                 @method('PUT')
-                <input id="coverInput" type="file" name="cover_image" accept="image/*">
+                <input type="hidden" name="username" value="{{ $user->username }}">
+                <input id="coverInput" type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
             </form>
         @endif
     @endauth
@@ -272,8 +284,11 @@
                     @if($user->headline)
                         <div style="font-weight:700">{{ $user->headline }}</div>
                     @endif
-                    @if($user->institution || $user->location)
-                        <div style="color:#666; margin-top:6px">{{ $user->institution }}{{ $user->institution && $user->location ? ' · ' : '' }}{{ $user->location }}</div>
+                    @if($user->institution || $user->city || $user->location)
+                        @php
+                            $place = collect([$user->city, $user->location])->filter()->implode(', ');
+                        @endphp
+                        <div style="color:#666; margin-top:6px">{{ $user->institution }}{{ $user->institution && $place ? ' · ' : '' }}{{ $place }}</div>
                     @endif
                     @if($user->website)
                         <div style="margin-top:6px"><a href="{{ $user->website }}" target="_blank" class="btn-pill">Website</a></div>
@@ -283,8 +298,9 @@
                 {{-- Edit profile info modal for owners --}}
                 @auth
                     @if(auth()->id() === $user->id)
-                        <div style="margin-top:12px">
-                            <button id="openEditModal" class="btn-pill">Edit profile info</button>
+                        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+                            <button id="openEditModal" class="btn-pill" type="button">Edit profile info</button>
+                            <a href="{{ route('profile.edit') }}" class="btn-pill">Edit lengkap</a>
                         </div>
 
                         <!-- Modal -->
@@ -296,21 +312,26 @@
                                     <input type="hidden" name="username" value="{{ $user->username }}">
                                     <div class="modal-grid">
                                         <div class="modal-left">
-                                            <div id="modalCoverPreview" style="width:160px; height:90px; border-radius:8px; background-image: url('{{ $user->cover_image ? asset('storage/'.$user->cover_image) : '/images/default-cover.jpg' }}'); background-size:cover; background-position:center; margin-bottom:10px; border:1px solid #eee"></div>
+                                            <div id="modalCoverPreview" style="width:160px; height:90px; border-radius:8px; background-image: url('{{ $user->cover_image ? asset('storage/'.$user->cover_image) : '/images/default-cover.png' }}'); background-size:cover; background-position:center; margin-bottom:10px; border:1px solid #eee"></div>
                                             <div class="avatar-preview" style="width:120px; height:120px;">
                                                 <img id="modalAvatarImg" src="{{ $user->avatar_url }}" alt="avatar">
                                             </div>
                                             <div style="margin-top:10px">
                                                 <label class="upload-link" for="modalAvatarInput">Upload avatar</label>
-                                                <input id="modalAvatarInput" type="file" name="avatar" accept="image/*" style="display:none">
+                                                <input id="modalAvatarInput" type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="display:none">
                                             </div>
                                             <div style="margin-top:8px">
                                                 <label class="upload-link" for="modalCoverInput">Upload cover</label>
-                                                <input id="modalCoverInput" type="file" name="cover_image" accept="image/*" style="display:none">
+                                                <input id="modalCoverInput" type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="display:none">
                                             </div>
                                         </div>
 
                                         <div class="modal-right">
+                                            <div>
+                                                <label style="font-weight:700">Bio</label>
+                                                <textarea name="bio" rows="2" placeholder="Ceritakan singkat tentang Anda">{{ old('bio', $user->bio) }}</textarea>
+                                            </div>
+
                                             <div>
                                                 <label style="font-weight:700">Headline</label>
                                                 <input name="headline" placeholder="Ex: Senior Designer, Art Director, Student" value="{{ old('headline', $user->headline) }}">
@@ -321,14 +342,25 @@
                                                 <input name="institution" placeholder="Institution" value="{{ old('institution', $user->institution) }}">
                                             </div>
 
-                                            <div>
-                                                <label style="font-weight:700">Location</label>
-                                                <input name="location" placeholder="City or Country" value="{{ old('location', $user->location) }}">
+                                            <div class="row-two">
+                                                <div style="flex:1">
+                                                    <label style="font-weight:700">City</label>
+                                                    <input name="city" placeholder="City" value="{{ old('city', $user->city) }}">
+                                                </div>
+                                                <div style="flex:1">
+                                                    <label style="font-weight:700">Location / Country</label>
+                                                    <input name="location" placeholder="Country" value="{{ old('location', $user->location) }}">
+                                                </div>
                                             </div>
 
                                             <div>
-                                                <label style="font-weight:700">URL</label>
-                                                <input name="website" placeholder="https://..." value="{{ old('website', $user->website) }}">
+                                                <label style="font-weight:700">Website URL</label>
+                                                <input type="url" name="website" placeholder="https://..." value="{{ old('website', $user->website) }}">
+                                            </div>
+
+                                            <div>
+                                                <label style="font-weight:700">Instagram URL</label>
+                                                <input type="url" name="ig" placeholder="https://instagram.com/..." value="{{ old('ig', $user->ig) }}">
                                             </div>
 
                                             <div style="display:flex; gap:8px; margin-top:12px">
@@ -384,9 +416,11 @@
                                 $creatorUsername = optional($art->user)->username ?? optional($art->user)->name ?? '';
                                 $creatorName = optional($art->user)->name ?? optional($art->user)->username ?? '';
                                 $creatorAvatar = optional($art->user)->avatar_url ?? '/images/icon/profil.png';
-                                $likeCount = is_object($art) && method_exists($art, 'likedBy') ? $art->likedBy()->count() : 0;
-                                $saveCount = is_object($art) && method_exists($art, 'savedBy') ? $art->savedBy()->count() : 0;
+                                $likeCount = isset($art->liked_by_count) ? $art->liked_by_count : (is_object($art) && method_exists($art, 'likedBy') ? $art->likedBy()->count() : 0);
+                                $saveCount = isset($art->saved_by_count) ? $art->saved_by_count : (is_object($art) && method_exists($art, 'savedBy') ? $art->savedBy()->count() : 0);
                                 $shareCount = $art->share_count ?? 0;
+                                $isArtLiked = in_array($art->id, $authLikedIds ?? [], true);
+                                $isArtSaved = in_array($art->id, $authSavedIds ?? [], true);
                             @endphp
                                 <img src="{{ $imgSrc }}" alt="{{ $art->title }}" class="thumbnail"
                                     data-title="{{ $art->title ?? '' }}"
@@ -394,30 +428,43 @@
                                     data-creator-name="{{ $creatorName }}"
                                     data-creator-username="{{ $creatorUsername }}"
                                     data-creator-id="{{ optional($art->user)->id ?? '' }}"
-                                    data-creator-id="{{ optional($art->user)->id ?? '' }}"
                                     data-creator-url="{{ $creatorUsername ? route('profile.show', $creatorUsername) : ($art->user?->id ? route('profile.show', $art->user->id) : '') }}"
                                     data-artwork-desc="{{ $art->description ?? '' }}"
                                     data-date="{{ isset($art->created_at) ? $art->created_at->diffForHumans() : '' }}"
                                     data-avatar="{{ $creatorAvatar }}"
                                     data-creator-role="{{ optional($art->user)->role ?? '' }}"
                                     data-artwork-id="{{ $art->id }}"
+                                    data-license-label="{{ $art->license_label }}"
+                                    data-artwork-url="{{ route('artworks.show', $art->id) }}"
                                     data-like-count="{{ $likeCount }}"
                                     data-save-count="{{ $saveCount }}"
                                     data-share-count="{{ $shareCount }}"
-                                    data-can-delete="{{ auth()->check() && auth()->id() === $art->user_id ? '1' : '0' }}"
+                                    data-liked="{{ $isArtLiked ? '1' : '0' }}"
+                                    data-saved="{{ $isArtSaved ? '1' : '0' }}"
+                                    data-can-delete="{{ auth()->check() && (auth()->id() === $art->user_id || auth()->user()->isAdmin()) ? '1' : '0' }}"
                                     data-delete-url="{{ route('profile.artworks.destroy', $art->id) }}"
                                 >
                             <div class="meta">
                                 <div style="font-weight:700">{{ $art->title }}</div>
                                 <div style="font-size:13px; color:#666">{{ $art->category?->name }}</div>
+                                @if(($isOwnerOrAdmin ?? false) && !$art->isApproved())
+                                    <div style="margin-top:6px;">
+                                        <span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;{{ $art->isRejected() ? 'background:#fee2e2;color:#991b1b;' : 'background:#fef3c7;color:#92400e;' }}">
+                                            {{ $art->isRejected() ? 'Ditolak' : 'Menunggu Kurasi' }}
+                                        </span>
+                                        @if($art->isRejected() && $art->moderation_note)
+                                            <div style="font-size:12px;color:#991b1b;margin-top:4px;">Alasan: {{ $art->moderation_note }}</div>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
-                            <div class="portfolio-meta" style="display:flex;gap:10px;align-items:center;margin-top:8px;margin-left:10px;">
+                            <div class="portfolio-meta" style="display:flex;gap:10px;align-items:center;margin-top:8px;margin-left:10px;padding-bottom:8px;">
                                 <span class="thumb-like" style="display:flex;align-items:center;gap:6px;">
                                     <img src="/images/icon/like.png" alt="like" style="width:16px;height:16px"/>
                                     <span class="thumb-like-count">{{ $likeCount }}</span>
                                 </span>
                                 <span class="thumb-save" style="display:flex;align-items:center;gap:6px;">
-                                    <img src="/images/icon/love.png" alt="save" style="width:16px;height:16px"/>
+                                    <img src="/images/icon/save.png" alt="save" style="width:16px;height:16px"/>
                                     <span class="thumb-save-count">{{ $saveCount }}</span>
                                 </span>
                                 <span class="thumb-share" style="display:flex;align-items:center;gap:6px;">
@@ -435,31 +482,43 @@
             <div class="tab-content" id="tab-saved" style="display:none">
                 <div class="masonry">
                     @foreach($saved as $art)
+                        @php
+                            $savedLikeCount = isset($art->liked_by_count) ? $art->liked_by_count : $art->likedBy()->count();
+                            $savedSaveCount = isset($art->saved_by_count) ? $art->saved_by_count : $art->savedBy()->count();
+                            $isArtLiked = in_array($art->id, $authLikedIds ?? [], true);
+                            $isArtSaved = in_array($art->id, $authSavedIds ?? [], true);
+                        @endphp
                         <div class="art-card">
                             <img src="{{ $art->image_path ? asset('storage/'.$art->image_path) : '' }}" alt="{{ $art->title }}" class="thumbnail"
                                 data-artwork-id="{{ $art->id }}"
                                 data-title="{{ $art->title ?? '' }}"
                                 data-desc="{{ $art->description ?? '' }}"
+                                data-artwork-desc="{{ $art->description ?? '' }}"
+                                data-date="{{ isset($art->created_at) ? $art->created_at->diffForHumans() : '' }}"
                                 data-creator-name="{{ optional($art->user)->name ?? optional($art->user)->username ?? '' }}"
                                 data-creator-id="{{ optional($art->user)->id ?? '' }}"
                                 data-creator-url="{{ optional($art->user)->username ? route('profile.show', optional($art->user)->username) : (optional($art->user)->id ? route('profile.show', optional($art->user)->id) : '') }}"
                                 data-creator-username="{{ optional($art->user)->username ?? '' }}"
                                 data-avatar="{{ optional($art->user)->avatar_url ?? '/images/icon/profil.png' }}"
-                                data-like-count="{{ $art->likedBy()->count() }}"
-                                data-save-count="{{ $art->savedBy()->count() }}"
-                                data-share-count="{{ $art->share_count ?? 0 }}">
+                                data-license-label="{{ $art->license_label }}"
+                                data-artwork-url="{{ route('artworks.show', $art->id) }}"
+                                data-like-count="{{ $savedLikeCount }}"
+                                data-save-count="{{ $savedSaveCount }}"
+                                data-share-count="{{ $art->share_count ?? 0 }}"
+                                data-liked="{{ $isArtLiked ? '1' : '0' }}"
+                                data-saved="{{ $isArtSaved ? '1' : '0' }}">
                             <div class="meta">
                                 <div style="font-weight:700">{{ $art->title }}</div>
                                 <div style="font-size:13px; color:#666">{{ $art->category?->name }}</div>
                             </div>
-                            <div class="portfolio-meta" style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+                            <div class="portfolio-meta" style="display:flex;gap:8px;align-items:center;margin-top:8px;margin-left:10px;padding-bottom:8px;">
                                 <span class="thumb-like" style="display:flex;align-items:center;gap:6px;">
                                     <img src="/images/icon/like.png" alt="like" style="width:16px;height:16px"/>
-                                    <span class="thumb-like-count">{{ $art->likedBy()->count() }}</span>
+                                    <span class="thumb-like-count">{{ $savedLikeCount }}</span>
                                 </span>
                                 <span class="thumb-save" style="display:flex;align-items:center;gap:6px;">
-                                    <img src="/images/icon/love.png" alt="save" style="width:16px;height:16px"/>
-                                    <span class="thumb-save-count">{{ $art->savedBy()->count() }}</span>
+                                    <img src="/images/icon/save.png" alt="save" style="width:16px;height:16px"/>
+                                    <span class="thumb-save-count">{{ $savedSaveCount }}</span>
                                 </span>
                                 <span class="thumb-share" style="display:flex;align-items:center;gap:6px;">
                                     <img src="/images/icon/share.png" alt="share" style="width:16px;height:16px"/>
@@ -476,31 +535,43 @@
             <div class="tab-content" id="tab-liked" style="display:none">
                 <div class="masonry">
                     @foreach($liked as $art)
+                        @php
+                            $likedLikeCount = isset($art->liked_by_count) ? $art->liked_by_count : $art->likedBy()->count();
+                            $likedSaveCount = isset($art->saved_by_count) ? $art->saved_by_count : $art->savedBy()->count();
+                            $isArtLiked = in_array($art->id, $authLikedIds ?? [], true);
+                            $isArtSaved = in_array($art->id, $authSavedIds ?? [], true);
+                        @endphp
                         <div class="art-card">
                             <img src="{{ $art->image_path ? asset('storage/'.$art->image_path) : '' }}" alt="{{ $art->title }}" class="thumbnail"
                                 data-artwork-id="{{ $art->id }}"
                                 data-title="{{ $art->title ?? '' }}"
                                 data-desc="{{ $art->description ?? '' }}"
+                                data-artwork-desc="{{ $art->description ?? '' }}"
+                                data-date="{{ isset($art->created_at) ? $art->created_at->diffForHumans() : '' }}"
                                 data-creator-name="{{ optional($art->user)->name ?? optional($art->user)->username ?? '' }}"
                                 data-creator-id="{{ optional($art->user)->id ?? '' }}"
                                 data-creator-url="{{ optional($art->user)->username ? route('profile.show', optional($art->user)->username) : (optional($art->user)->id ? route('profile.show', optional($art->user)->id) : '') }}"
                                 data-creator-username="{{ optional($art->user)->username ?? '' }}"
                                 data-avatar="{{ optional($art->user)->avatar_url ?? '/images/icon/profil.png' }}"
-                                data-like-count="{{ $art->likedBy()->count() }}"
-                                data-save-count="{{ $art->savedBy()->count() }}"
-                                data-share-count="{{ $art->share_count ?? 0 }}">
+                                data-license-label="{{ $art->license_label }}"
+                                data-artwork-url="{{ route('artworks.show', $art->id) }}"
+                                data-like-count="{{ $likedLikeCount }}"
+                                data-save-count="{{ $likedSaveCount }}"
+                                data-share-count="{{ $art->share_count ?? 0 }}"
+                                data-liked="{{ $isArtLiked ? '1' : '0' }}"
+                                data-saved="{{ $isArtSaved ? '1' : '0' }}">
                             <div class="meta">
                                 <div style="font-weight:700">{{ $art->title }}</div>
                                 <div style="font-size:13px; color:#666">{{ $art->category?->name }}</div>
                             </div>
-                            <div class="portfolio-meta" style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+                            <div class="portfolio-meta" style="display:flex;gap:8px;align-items:center;margin-top:8px;margin-left:10px;padding-bottom:8px;">
                                 <span class="thumb-like" style="display:flex;align-items:center;gap:6px;">
                                     <img src="/images/icon/like.png" alt="like" style="width:16px;height:16px"/>
-                                    <span class="thumb-like-count">{{ $art->likedBy()->count() }}</span>
+                                    <span class="thumb-like-count">{{ $likedLikeCount }}</span>
                                 </span>
                                 <span class="thumb-save" style="display:flex;align-items:center;gap:6px;">
-                                    <img src="/images/icon/love.png" alt="save" style="width:16px;height:16px"/>
-                                    <span class="thumb-save-count">{{ $art->savedBy()->count() }}</span>
+                                    <img src="/images/icon/save.png" alt="save" style="width:16px;height:16px"/>
+                                    <span class="thumb-save-count">{{ $likedSaveCount }}</span>
                                 </span>
                                 <span class="thumb-share" style="display:flex;align-items:center;gap:6px;">
                                     <img src="/images/icon/share.png" alt="share" style="width:16px;height:16px"/>
@@ -523,10 +594,20 @@
                             @endif
                             <h3 style="margin:0">{{ $article->title }}</h3>
                             <div style="color:#666;font-size:13px">{{ $article->created_at->diffForHumans() }}</div>
+                            @if(($isOwnerOrAdmin ?? false) && !$article->isApproved())
+                                <div style="margin-top:6px;">
+                                    <span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;{{ $article->isRejected() ? 'background:#fee2e2;color:#991b1b;' : 'background:#fef3c7;color:#92400e;' }}">
+                                        {{ $article->isRejected() ? 'Ditolak' : 'Menunggu Kurasi' }}
+                                    </span>
+                                    @if($article->isRejected() && $article->moderation_note)
+                                        <div style="font-size:12px;color:#991b1b;margin-top:4px;">Alasan: {{ $article->moderation_note }}</div>
+                                    @endif
+                                </div>
+                            @endif
                             <p style="margin-top:8px;color:#333">{{ Str::limit(strip_tags($article->body), 180) }}</p>
                             <a href="{{ route('articles.show', $article->id) }}" class="btn">Read more</a>
                             @auth
-                                @if(auth()->id() === $article->user_id)
+                                @if(auth()->id() === $article->user_id || auth()->user()->isAdmin())
                                     <form method="POST" action="{{ route('articles.destroy', $article->id) }}" class="article-delete-form" data-ajax="true" style="display:inline-block; margin-left:8px;">
                                         @csrf
                                         @method('DELETE')
@@ -580,6 +661,10 @@
 
             <div style="flex:1">
                 <strong id="modalTitle" class="modal-title"></strong>
+                <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span id="modalLicenseBadge" style="display:none;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;"></span>
+                    <a id="modalDetailLink" href="#" style="display:none;font-size:12px;color:#b91c1c;text-decoration:underline;">Detail &amp; Laporkan Karya</a>
+                </div>
                 <p id="modalArtworkDesc" class="modal-artwork-desc" style="margin-top:8px; color:#444">Deskripsi karya akan ditampilkan di sini.</p>
             </div>
             <!-- Interaction buttons -->
@@ -743,11 +828,15 @@
                 const finalCount = (data && data.like_count !== undefined) ? data.like_count : pendingCount;
                 const finalLiked = (data && data.liked !== undefined) ? (data.liked === true) : pendingLiked;
                 if (modalLikeCount) modalLikeCount.textContent = finalCount ?? '';
-                currentImg.dataset.likeCount = finalCount ?? '';
-                currentImg.dataset.liked = finalLiked ? '1' : '0';
+                document.querySelectorAll('.thumbnail[data-artwork-id="' + artId + '"]').forEach(el => {
+                    el.dataset.likeCount = finalCount ?? '';
+                    el.dataset.liked = finalLiked ? '1' : '0';
+                    const c = el.closest('.portfolio-item') || el.closest('.art-card');
+                    const lc = c?.querySelector('.thumb-like-count');
+                    if (lc) lc.textContent = finalCount ?? '';
+                });
                 modalLikeBtn.classList.toggle('active', finalLiked);
                 setIconState(modalLikeBtn, finalLiked, 'like');
-                try { const container = currentImg.closest('.portfolio-item') || currentImg.closest('.art-card'); const lc = container?.querySelector('.thumb-like-count'); if (lc) lc.textContent = finalCount ?? ''; } catch (e){}
                 try { const card = currentImg && (currentImg.closest('.art-card') || currentImg.closest('.portfolio-item')); const cardHtml = card ? card.outerHTML : null; const owner_username = currentImg?.dataset?.creatorUsername || null; const owner_id = currentImg?.dataset?.creatorId || null; const owner = owner_username || owner_id || null; const actor = window.CURRENT_USERNAME || null; const title = currentImg?.dataset?.title || null; const broadcast = { id: artId, action: 'like', state: !!finalLiked, cardHtml: cardHtml, owner, owner_username, owner_id, actor, title, t: Date.now() }; console.log('broadcast artwork-action', broadcast); localStorage.setItem('artwork-action', JSON.stringify(broadcast)); try { window.dispatchEvent(new CustomEvent('artwork-action', { detail: broadcast })); } catch(e) {} setTimeout(()=> localStorage.removeItem('artwork-action'), 600); } catch(e) {}
             } catch (err) {
                 console.debug('profile like handler error', err);
@@ -789,11 +878,15 @@
                 const finalCount = (data && data.save_count !== undefined) ? data.save_count : pendingCount;
                 const finalSaved = (data && data.saved !== undefined) ? (data.saved === true) : pendingSaved;
                 if (modalSaveCount) modalSaveCount.textContent = finalCount ?? '';
-                currentImg.dataset.saveCount = finalCount ?? '';
-                currentImg.dataset.saved = finalSaved ? '1' : '0';
+                document.querySelectorAll('.thumbnail[data-artwork-id="' + artId + '"]').forEach(el => {
+                    el.dataset.saveCount = finalCount ?? '';
+                    el.dataset.saved = finalSaved ? '1' : '0';
+                    const c = el.closest('.portfolio-item') || el.closest('.art-card');
+                    const sc = c?.querySelector('.thumb-save-count');
+                    if (sc) sc.textContent = finalCount ?? '';
+                });
                 modalSaveBtn.classList.toggle('active', finalSaved);
                 setIconState(modalSaveBtn, finalSaved, 'save');
-                try { const container = currentImg.closest('.portfolio-item') || currentImg.closest('.art-card'); const sc = container?.querySelector('.thumb-save-count'); if (sc) sc.textContent = finalCount ?? ''; } catch (e){}
                 try { const card = currentImg && (currentImg.closest('.art-card') || currentImg.closest('.portfolio-item')); const cardHtml = card ? card.outerHTML : null; const owner_username = currentImg?.dataset?.creatorUsername || null; const owner_id = currentImg?.dataset?.creatorId || null; const owner = owner_username || owner_id || null; const actor = window.CURRENT_USERNAME || null; const title = currentImg?.dataset?.title || null; const broadcast = { id: artId, action: 'save', state: !!finalSaved, cardHtml: cardHtml, owner, owner_username, owner_id, actor, title, t: Date.now() }; console.log('broadcast artwork-action', broadcast); localStorage.setItem('artwork-action', JSON.stringify(broadcast)); try { window.dispatchEvent(new CustomEvent('artwork-action', { detail: broadcast })); } catch(e) {} setTimeout(()=> localStorage.removeItem('artwork-action'), 600); } catch(e) {}
             } catch (err) {
                 console.debug('profile save handler error', err);
@@ -865,6 +958,26 @@
             const descEl = document.getElementById('modalArtworkDesc');
             if(descEl) descEl.textContent = img.dataset.artworkDesc || 'Deskripsi karya belum tersedia.';
             if(modalDate) modalDate.textContent = img.dataset.date || '';
+
+            const licenseBadgeEl = document.getElementById('modalLicenseBadge');
+            if (licenseBadgeEl) {
+                if (img.dataset.licenseLabel) {
+                    licenseBadgeEl.textContent = 'Lisensi: ' + img.dataset.licenseLabel;
+                    licenseBadgeEl.style.display = 'inline-block';
+                } else {
+                    licenseBadgeEl.style.display = 'none';
+                }
+            }
+            const detailLinkEl = document.getElementById('modalDetailLink');
+            if (detailLinkEl) {
+                const detailUrl = img.dataset.artworkUrl || (img.dataset.artworkId ? ('/artworks/' + img.dataset.artworkId) : '');
+                if (detailUrl) {
+                    detailLinkEl.href = detailUrl;
+                    detailLinkEl.style.display = 'inline-block';
+                } else {
+                    detailLinkEl.style.display = 'none';
+                }
+            }
 
             // handle delete button visibility and action
             const canDelete = img.dataset.canDelete === '1';

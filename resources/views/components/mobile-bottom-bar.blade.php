@@ -80,11 +80,26 @@
         </div>
         <div style="margin-bottom: 16px;">
             <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Image</label>
-            <input type="file" name="image" accept="image/*" required style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+            <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+            <small style="display: block; color: #666; margin-top: 4px; font-size: 12px;">Format: JPG, JPEG, PNG, WEBP. Maksimal 10 MB.</small>
+        </div>
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Lisensi Karya (HKI)</label>
+            <select name="license" required style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                @foreach(\App\Models\Artwork::LICENSES as $licenseKey => $licenseLabel)
+                    <option value="{{ $licenseKey }}">{{ $licenseLabel }}</option>
+                @endforeach
+            </select>
         </div>
         <div style="margin-bottom: 16px;">
             <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Description</label>
             <textarea name="description" rows="4" style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+        </div>
+        <div style="margin-bottom: 16px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px;">
+            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; cursor: pointer;">
+                <input type="checkbox" name="originality_confirmed" value="1" required style="margin-top: 2px;">
+                <span>Saya menyatakan karya ini adalah karya asli saya atau saya memiliki izin resmi untuk mengunggahnya. Karya baru akan menunggu persetujuan kurator.</span>
+            </label>
         </div>
         <div style="display: flex; gap: 8px; padding-top: 8px;">
             <button type="button" onclick="hideMobileArtworkForm()" style="flex: 1; padding: 12px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancel</button>
@@ -108,7 +123,8 @@
         </div>
         <div style="margin-bottom: 16px;">
             <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Cover Image (optional)</label>
-            <input type="file" name="image" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+            <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" style="width: 100%; padding: 8px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+            <small style="display: block; color: #666; margin-top: 4px; font-size: 12px;">Format: JPG, JPEG, PNG, WEBP. Maksimal 10 MB. Artikel baru menunggu persetujuan kurator.</small>
         </div>
         <div style="margin-bottom: 16px;">
             <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px;">Body</label>

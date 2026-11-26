@@ -11,15 +11,31 @@ class ExploreController extends Controller
      */
     public function index()
     {
-        // Fetch artworks from database with pagination when table exists
+        // Fetch approved artworks from database with pagination when table exists
         $artworks = [];
         $categories = collect();
+        $authLikedIds = [];
+        $authSavedIds = [];
+
         if (\Illuminate\Support\Facades\Schema::hasTable('artworks')) {
-            $artworks = \App\Models\Artwork::with('user','category')->latest()->paginate(12);
+            $artworks = \App\Models\Artwork::approved()
+                ->with('user', 'category')
+                ->withCount(['likedBy', 'savedBy'])
+                ->latest()
+                ->paginate(12);
+
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                $authUser = \Illuminate\Support\Facades\Auth::user();
+                if (\Illuminate\Support\Facades\Schema::hasTable('artwork_likes')) {
+                    $authLikedIds = $authUser->likedArtworks()->pluck('artworks.id')->all();
+                }
+                if (\Illuminate\Support\Facades\Schema::hasTable('artwork_saves')) {
+                    $authSavedIds = $authUser->savedArtworks()->pluck('artworks.id')->all();
+                }
+            }
         } else {
             // Fallback sample items to keep views working when DB not migrated (eg tests)
             $artworks = collect($this->getPortfolioItems(1))->map(function ($it) {
-                // ensure nested user is an object so view can access ->username / ->name
                 $it['user'] = (object) ($it['user'] ?? []);
                 return (object) $it;
             });
@@ -32,6 +48,8 @@ class ExploreController extends Controller
         return view('explore', [
             'artworks' => $artworks,
             'categories' => $categories,
+            'authLikedIds' => $authLikedIds,
+            'authSavedIds' => $authSavedIds,
         ]);
     }
 
@@ -40,15 +58,30 @@ class ExploreController extends Controller
      */
     public function dashboard()
     {
-        // Fetch artworks from database with pagination when table exists
+        // Fetch approved artworks from database with pagination when table exists
         $artworks = [];
         $categories = collect();
+        $authLikedIds = [];
+        $authSavedIds = [];
+
         if (\Illuminate\Support\Facades\Schema::hasTable('artworks')) {
-            $artworks = \App\Models\Artwork::with('user','category')->latest()->paginate(12);
+            $artworks = \App\Models\Artwork::approved()
+                ->with('user', 'category')
+                ->withCount(['likedBy', 'savedBy'])
+                ->latest()
+                ->paginate(12);
+
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                $authUser = \Illuminate\Support\Facades\Auth::user();
+                if (\Illuminate\Support\Facades\Schema::hasTable('artwork_likes')) {
+                    $authLikedIds = $authUser->likedArtworks()->pluck('artworks.id')->all();
+                }
+                if (\Illuminate\Support\Facades\Schema::hasTable('artwork_saves')) {
+                    $authSavedIds = $authUser->savedArtworks()->pluck('artworks.id')->all();
+                }
+            }
         } else {
-            // Fallback sample items to keep views working when DB not migrated (eg tests)
             $artworks = collect($this->getPortfolioItems(1))->map(function ($it) {
-                // ensure nested user is an object so view can access ->username / ->name
                 $it['user'] = (object) ($it['user'] ?? []);
                 return (object) $it;
             });
@@ -73,6 +106,8 @@ class ExploreController extends Controller
             'categories' => $categories,
             'showHero' => false,
             'onlineUsers' => $onlineUsers,
+            'authLikedIds' => $authLikedIds,
+            'authSavedIds' => $authSavedIds,
         ]);
     }
 
@@ -82,26 +117,33 @@ class ExploreController extends Controller
     public function loadMore(Request $request)
     {
         $page = $request->get('page', 1);
-        
-        // Fetch real artworks from database if available
+
         $artworks = [];
         if (\Illuminate\Support\Facades\Schema::hasTable('artworks')) {
-            $artworks = \App\Models\Artwork::with('user','category')
+            $artworks = \App\Models\Artwork::approved()
+                ->with('user', 'category')
+                ->withCount(['likedBy', 'savedBy'])
                 ->latest()
                 ->paginate(12, ['*'], 'page', $page)
                 ->items();
         } else {
-            // Fallback to sample data
-            $items = $this->getPortfolioItems(page: (int)$page);
+            $items = $this->getPortfolioItems(page: (int) $page);
             return response()->json([
                 'success' => true,
                 'items' => $items,
                 'page' => $page,
             ]);
         }
-        
-        // Transform artworks to the expected format with counts
-        $items = array_map(function ($art) {
+
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+        $authLikedIds = ($authUser && \Illuminate\Support\Facades\Schema::hasTable('artwork_likes'))
+            ? $authUser->likedArtworks()->pluck('artworks.id')->all()
+            : [];
+        $authSavedIds = ($authUser && \Illuminate\Support\Facades\Schema::hasTable('artwork_saves'))
+            ? $authUser->savedArtworks()->pluck('artworks.id')->all()
+            : [];
+
+        $items = array_map(function ($art) use ($authLikedIds, $authSavedIds) {
             return [
                 'id' => $art->id,
                 'title' => $art->title,
@@ -110,15 +152,20 @@ class ExploreController extends Controller
                 'image' => !empty($art->image_path) ? asset('storage/'.$art->image_path) : null,
                 'date' => isset($art->created_at) ? $art->created_at->diffForHumans() : '',
                 'size' => $art->size ?? 'normal',
+                'license_label' => $art->license_label,
+                'artwork_url' => route('artworks.show', $art->id),
                 'user' => [
+                    'id' => optional($art->user)->id,
                     'username' => optional($art->user)->username,
                     'name' => optional($art->user)->name,
                     'avatar' => optional($art->user)->avatar_url ?? '/images/icon/profil.png',
                     'role' => optional($art->user)->role ?? '',
                 ],
-                'like_count' => $art->likedBy()->count(),
-                'save_count' => $art->savedBy()->count(),
+                'like_count' => $art->liked_by_count ?? $art->likedBy()->count(),
+                'save_count' => $art->saved_by_count ?? $art->savedBy()->count(),
                 'share_count' => $art->share_count ?? 0,
+                'liked' => in_array($art->id, $authLikedIds, true),
+                'saved' => in_array($art->id, $authSavedIds, true),
             ];
         }, $artworks);
 

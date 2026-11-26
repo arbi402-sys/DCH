@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #ffffffff 0%, #adacacff 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -32,14 +32,20 @@
         }
 
         .login-left {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 60px 40px;
+            background: #E25213;
+            padding: 0;
             color: white;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
+        }
+
+        .login-left img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .login-left h1 {
@@ -123,7 +129,7 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #E25213;
             box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
         }
 
@@ -145,18 +151,18 @@
         }
 
         .remember-forgot a {
-            color: #667eea;
+            color: #E25213;
             text-decoration: none;
             font-weight: 600;
             transition: color 0.3s ease;
         }
 
         .remember-forgot a:hover {
-            color: #764ba2;
+            color: #E25213;
         }
 
         .login-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #E25213 0%, #c1420cff 100%);
             color: white;
             border: none;
             padding: 14px;
@@ -185,14 +191,14 @@
         }
 
         .signup-link a {
-            color: #667eea;
+            color: #E25213;
             text-decoration: none;
             font-weight: 700;
             transition: color 0.3s ease;
         }
 
         .signup-link a:hover {
-            color: #764ba2;
+            color: #E25213;
         }
 
         .divider {
@@ -232,7 +238,7 @@
         }
 
         .social-btn:hover {
-            border-color: #667eea;
+            border-color: #E25213;
             background: #f8f9ff;
         }
 
@@ -340,6 +346,7 @@
     <div class="login-container">
         <!-- Left Section -->
         <div class="login-left">
+            <img src="{{ asset('images/login.svg') }}" alt="Login Illustration">
         </div>
 
         <!-- Right Section -->

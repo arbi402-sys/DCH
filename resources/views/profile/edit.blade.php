@@ -4,6 +4,23 @@
 <div class="container">
     <h1>Edit Profile</h1>
 
+    @if ($errors->any())
+        <div style="background:#f8d7da;border:1px solid #f5c6cb;color:#721c24;padding:12px;border-radius:4px;margin-bottom:16px;">
+            <strong>Ada kesalahan:</strong>
+            <ul style="margin:8px 0 0 0;padding-left:20px;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if (session('success'))
+        <div style="background:#d4edda;border:1px solid #c3e6cb;color:#155724;padding:12px;border-radius:4px;margin-bottom:16px;">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
@@ -33,45 +50,46 @@
             <input name="institution" value="{{ old('institution', $user->institution) }}">
         </div>
         <div>
-            <label>Location</label>
+            <label>Location / Country</label>
             <select name="location">
                 <option value="">Select country</option>
                 <option value="Indonesia" {{ old('location', $user->location) == 'Indonesia' ? 'selected' : '' }}>Indonesia</option>
                 <option value="United States" {{ old('location', $user->location) == 'United States' ? 'selected' : '' }}>United States</option>
                 <option value="Other" {{ old('location', $user->location) == 'Other' ? 'selected' : '' }}>Other</option>
+                @if(old('location', $user->location) && !in_array(old('location', $user->location), ['Indonesia', 'United States', 'Other'], true))
+                    <option value="{{ old('location', $user->location) }}" selected>{{ old('location', $user->location) }}</option>
+                @endif
             </select>
         </div>
         <div>
             <label>City</label>
-            <input name="city" value="{{ old('city', $user->city) }}">
-        </div>
-        <div>
-            <label>Location</label>
-            <input name="location" value="{{ old('location', $user->location) }}">
+            <input name="city" value="{{ old('city', $user->city) }}" placeholder="Contoh: Bandung, Jakarta">
         </div>
         <div>
             <label>Website</label>
-            <input name="website" value="{{ old('website', $user->website) }}">
+            <input type="url" name="website" value="{{ old('website', $user->website) }}" placeholder="https://example.com">
         </div>
         <div>
             <label>Instagram URL</label>
-            <input name="ig" value="{{ old('ig', $user->ig) }}">
+            <input type="url" name="ig" value="{{ old('ig', $user->ig) }}" placeholder="https://instagram.com/username">
         </div>
 
         <div>
             <label>Avatar</label>
-            <input type="file" name="avatar">
+            <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+            <small style="display:block;color:#666;">Format: JPG, JPEG, PNG, WEBP. Maksimal 2 MB.</small>
             @if($user->avatar)<div><img src="{{ asset('storage/'.$user->avatar) }}" style="width:80px;height:80px;object-fit:cover;border-radius:50%"></div>@endif
         </div>
 
         <div>
             <label>Cover Image</label>
-            <input type="file" name="cover_image">
+            <input type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+            <small style="display:block;color:#666;">Format: JPG, JPEG, PNG, WEBP. Maksimal 4 MB.</small>
             @if($user->cover_image)<div><img src="{{ asset('storage/'.$user->cover_image) }}" style="width:200px;height:80px;object-fit:cover"></div>@endif
         </div>
 
         <div>
-            <button class="btn">Save</button>
+            <button type="submit" class="btn">Save</button>
         </div>
     </form>
 </div>

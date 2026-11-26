@@ -30,6 +30,7 @@ class User extends Authenticatable
         'location',
         'city',
         'website',
+        'ig',
         'category',
         'newsletter',
         'role',
@@ -137,5 +138,21 @@ class User extends Authenticatable
     public function articles()
     {
         return $this->hasMany(\App\Models\Article::class);
+    }
+
+    /**
+     * Infringement reports filed by this user
+     */
+    public function artworkReports()
+    {
+        return $this->hasMany(\App\Models\ArtworkReport::class, 'reporter_id');
+    }
+
+    /**
+     * Check whether the user has moderator/admin privileges.
+     */
+    public function isAdmin(): bool
+    {
+        return strtolower((string) $this->role) === 'admin';
     }
 }

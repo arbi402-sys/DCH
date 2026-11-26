@@ -4,35 +4,46 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
     public function show(Article $article)
     {
-        $article->loadMissing('user','category');
+        $user = Auth::user();
+        $canViewUnapproved = $user && ($user->id === $article->user_id || $user->isAdmin());
+
+        if (! $article->isApproved() && ! $canViewUnapproved) {
+            abort(404);
+        }
+
+        $article->loadMissing('user', 'category', 'moderator');
+
         return view('articles.show', compact('article'));
     }
 
-    public function destroy(\Illuminate\Http\Request $request, Article $article)
+    public function destroy(Request $request, Article $article)
     {
-        $user = auth()->user();
-        if (!$user || $user->id !== $article->user_id) {
+        $user = Auth::user();
+        if (! $user || ($user->id !== $article->user_id && ! $user->isAdmin())) {
             abort(403);
         }
 
-        // delete associated image from storage if present
         if ($article->image_path) {
-            try { \Illuminate\Support\Facades\Storage::disk('public')->delete($article->image_path); } catch (\Exception $e) { /* ignore cleanup errors */ }
+            try {
+                Storage::disk('public')->delete($article->image_path);
+            } catch (\Exception $e) {
+                // ignore cleanup errors
+            }
         }
 
         $article->delete();
 
-        // If request expects JSON (AJAX), return JSON so client can stay on the same page
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json(['success' => true]);
         }
 
-        // fallback: redirect back
         return redirect()->back()->with('status', 'Artikel berhasil dihapus.');
     }
-} 
+}

@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #000000ff 0%, #000000ff 100%);
+            background: linear-gradient(135deg, #ffffffff 0%, #adacacff 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -33,8 +33,8 @@
         }
 
         .register-left {
-            background: linear-gradient(135deg, #000000ff 0%, #222222ff 100%);
-            padding: 60px 40px;
+            background: #E25213;
+            padding: 0;
             color: white;
             display: flex;
             justify-content: center;
@@ -42,41 +42,10 @@
             text-align: center;
         }
 
-        .register-left h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            font-weight: 800;
-        }
-
-        .register-left p {
-            font-size: 1em;
-            line-height: 1.6;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-
-        .register-left .benefits {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: flex-start;
+        .register-left img {
             width: 100%;
-        }
-
-        .register-left .benefit {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .register-left .benefit-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3em;
+            height: 100%;
+            object-fit: cover;
         }
 
         .register-right {
@@ -96,7 +65,7 @@
         }
 
         .register-right .subtitle {
-            color: #999;
+            color: #ffffffff;
             margin-bottom: 25px;
             font-size: 0.9em;
         }
@@ -117,7 +86,7 @@
 
         .form-group label {
             display: block;
-            color: #333;
+            color: #000000ff;
             font-weight: 600;
             margin-bottom: 8px;
             font-size: 0.95em;
@@ -137,7 +106,7 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #E25213;
             box-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
         }
 
@@ -161,7 +130,7 @@
         }
 
         .register-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #E25213;
             color: white;
             border: none;
             padding: 14px;
@@ -191,14 +160,14 @@
         }
 
         .login-link a {
-            color: #667eea;
+            color: #E25213;
             text-decoration: none;
             font-weight: 700;
             transition: color 0.3s ease;
         }
 
         .login-link a:hover {
-            color: #764ba2;
+            color: #E25213;
         }
 
         .divider {
@@ -238,7 +207,7 @@
         }
 
         .social-btn:hover {
-            border-color: #667eea;
+            border-color: #E25213;
             background: #f8f9ff;
         }
 
@@ -352,6 +321,7 @@
     <div class="register-container">
         <!-- Left Section -->
         <div class="register-left">
+            <img src="{{ asset('images/register.svg') }}" alt="Register Illustration">
         </div>
 
         <!-- Right Section -->
@@ -522,7 +492,7 @@
                 <div class="checkbox-group">
                     <input type="checkbox" id="terms" name="terms" @if(old('terms')) checked @endif required>
                     <label for="terms" style="margin: 0; font-weight: normal;">
-                        Saya setuju dengan <a href="#" style="color: #667eea; text-decoration: none;">Syarat dan Ketentuan</a>
+                        Saya setuju dengan <a href="{{ route('not-found') }}" style="color: #E25213; text-decoration: none;">Syarat dan Ketentuan</a>
                     </label>
                 </div>
 

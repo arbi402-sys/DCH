@@ -41,7 +41,7 @@ class ArtworkDeleteTest extends TestCase
             'user_id' => $user->id,
             'title' => 'To be deleted 2',
             'description' => 'desc',
-            'image_path' => null,
+            'image_path' => 'artworks/test-delete-2.jpg',
         ]);
 
         $this->actingAs($user)
@@ -60,7 +60,7 @@ class ArtworkDeleteTest extends TestCase
             'user_id' => $other->id,
             'title' => 'Protected',
             'description' => 'desc',
-            'image_path' => null,
+            'image_path' => 'artworks/protected.jpg',
         ]);
 
         $this->actingAs($user)

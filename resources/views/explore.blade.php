@@ -621,11 +621,12 @@ Group 20
 
             /* Mobile grid - 2 columns like Pinterest */
             .portfolio-grid {
-                padding: 4px;
+                padding: 0px;
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 4px;
                 grid-auto-rows: auto;
-                margin: 0;
+                margin-top: 25px;
+                margin-left: 0px;
             }
 
             .portfolio-item {
@@ -1148,6 +1149,16 @@ Group 20
         @if(session('error'))
           <div style="background:#e53935;color:white;padding:10px;border-radius:8px;margin:12px 0">{{ session('error') }}</div>
         @endif
+        @if($errors->any())
+          <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:12px;border-radius:8px;margin:12px 0">
+            <strong>Validasi gagal:</strong>
+            <ul style="margin:6px 0 0 18px;padding:0;">
+              @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
 
      
 
@@ -1194,6 +1205,12 @@ Group 20
                           $creatorUsername = optional($art->user)->username ?? optional($art->user)->name ?? '';
                           $creatorName = optional($art->user)->name ?? optional($art->user)->username ?? '';
                           $creatorAvatar = optional($art->user)->avatar_url ?? '/images/icon/profil.png';
+                          $likeCount = isset($art->liked_by_count) ? $art->liked_by_count : (is_object($art) && method_exists($art, 'likedBy') ? $art->likedBy()->count() : 0);
+                          $saveCount = isset($art->saved_by_count) ? $art->saved_by_count : (is_object($art) && method_exists($art, 'savedBy') ? $art->savedBy()->count() : 0);
+                          $isArtLiked = isset($authLikedIds) ? in_array($art->id, $authLikedIds, true) : (auth()->check() && is_object($art) && method_exists($art, 'likedBy') && $art->likedBy()->where('users.id', auth()->id())->exists());
+                          $isArtSaved = isset($authSavedIds) ? in_array($art->id, $authSavedIds, true) : (auth()->check() && is_object($art) && method_exists($art, 'savedBy') && $art->savedBy()->where('users.id', auth()->id())->exists());
+                          $licenseLabel = is_object($art) && isset($art->license_label) ? $art->license_label : 'All Rights Reserved';
+                          $artworkUrl = is_object($art) && method_exists($art, 'getKey') ? route('artworks.show', $art->id) : '';
                         @endphp
                         @if($imgSrc)
                             <img src="{{ $imgSrc }}" alt="Artwork" class="thumbnail"
@@ -1208,11 +1225,13 @@ Group 20
                               data-date="{{ isset($art->created_at) ? $art->created_at->diffForHumans() : '' }}"
                               data-avatar="{{ $creatorAvatar }}"
                               data-creator-role="{{ optional($art->user)->role ?? '' }}"
-                              data-like-count="{{ is_object($art) && method_exists($art, 'likedBy') ? $art->likedBy()->count() : 0 }}"
-                              data-save-count="{{ is_object($art) && method_exists($art, 'savedBy') ? $art->savedBy()->count() : 0 }}"
+                              data-license-label="{{ $licenseLabel }}"
+                              data-artwork-url="{{ $artworkUrl }}"
+                              data-like-count="{{ $likeCount }}"
+                              data-save-count="{{ $saveCount }}"
                               data-share-count="{{ is_object($art) && isset($art->share_count) ? $art->share_count : 0 }}"
-                              data-liked="{{ auth()->check() && $art->likedBy()->where('users.id', auth()->id())->exists() ? '1' : '0' }}"
-                              data-saved="{{ auth()->check() && $art->savedBy()->where('users.id', auth()->id())->exists() ? '1' : '0' }}"
+                              data-liked="{{ $isArtLiked ? '1' : '0' }}"
+                              data-saved="{{ $isArtSaved ? '1' : '0' }}"
                             />
                         @else
                             <div style="background:#eee;width:100%;height:100%"></div>
@@ -1224,11 +1243,11 @@ Group 20
                     <div class="portfolio-meta" style="display:flex;gap:8px;align-items:center;margin-top:8px;">
                       <span class="thumb-like" style="display:flex;align-items:center;gap:6px;">
                         <img src="/images/icon/like.png" alt="like" style="width:16px;height:16px"/>
-                        <span class="thumb-like-count">{{ is_object($art) && method_exists($art, 'likedBy') ? $art->likedBy()->count() : 0 }}</span>
+                        <span class="thumb-like-count">{{ $likeCount }}</span>
                       </span>
                       <span class="thumb-save" style="display:flex;align-items:center;gap:6px;">
-                        <img src="/images/icon/love.png" alt="save" style="width:16px;height:16px"/>
-                        <span class="thumb-save-count">{{ is_object($art) && method_exists($art, 'savedBy') ? $art->savedBy()->count() : 0 }}</span>
+                        <img src="/images/icon/save.png" alt="save" style="width:16px;height:16px"/>
+                        <span class="thumb-save-count">{{ $saveCount }}</span>
                       </span>
                       <span class="thumb-share" style="display:flex;align-items:center;gap:6px;">
                         <img src="/images/icon/share.png" alt="share" style="width:16px;height:16px"/>
@@ -1281,6 +1300,10 @@ Group 20
         <!-- Artwork title and description -->
         <div style="flex:1;">
           <strong id="modalTitle" class="modal-title"></strong>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span id="modalLicenseBadge" style="display:none;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;"></span>
+            <a id="modalDetailLink" href="#" style="display:none;font-size:12px;color:#b91c1c;text-decoration:underline;">Detail &amp; Laporkan Karya</a>
+          </div>
           <p id="modalArtworkDesc" class="modal-artwork-desc">Deskripsi karya akan ditampilkan di sini.</p>
         </div>
 
@@ -1472,6 +1495,7 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
       currentImg.dataset.saveCount = finalCount ?? '';
       currentImg.dataset.saved = finalSaved ? '1' : '0';
       modalSaveBtn.classList.toggle('active', finalSaved);
+      setIconState(modalSaveBtn, finalSaved, 'save');
       console.debug('explore save updated', { artId, beforeCount, pendingCount, finalCount, finalSaved, server: data });
       try { const container = currentImg.closest('.portfolio-item') || currentImg.closest('.art-card'); const sc = container?.querySelector('.thumb-save-count'); if (sc) sc.textContent = finalCount ?? ''; } catch (e){ console.debug('thumb sync save error', e); }
       try {
@@ -1574,6 +1598,26 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
     if (modalArtworkDesc) modalArtworkDesc.textContent = img.dataset.artworkDesc || "Deskripsi karya belum tersedia.";
     if (modalDate) modalDate.textContent = img.dataset.date;
 
+    const licenseBadgeEl = document.getElementById('modalLicenseBadge');
+    if (licenseBadgeEl) {
+      if (img.dataset.licenseLabel) {
+        licenseBadgeEl.textContent = 'Lisensi: ' + img.dataset.licenseLabel;
+        licenseBadgeEl.style.display = 'inline-block';
+      } else {
+        licenseBadgeEl.style.display = 'none';
+      }
+    }
+    const detailLinkEl = document.getElementById('modalDetailLink');
+    if (detailLinkEl) {
+      const detailUrl = img.dataset.artworkUrl || (img.dataset.artworkId ? ('/artworks/' + img.dataset.artworkId) : '');
+      if (detailUrl) {
+        detailLinkEl.href = detailUrl;
+        detailLinkEl.style.display = 'inline-block';
+      } else {
+        detailLinkEl.style.display = 'none';
+      }
+    }
+
     // populate counts
     const modalLikeCount = modal.querySelector('#modalLikeCount');
     const modalSaveCount = modal.querySelector('#modalSaveCount');
@@ -1583,8 +1627,9 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
     if (modalShareCount) modalShareCount.textContent = img.dataset.shareCount || '0';
 
     // set button active states based on dataset to ensure optimistic toggles use correct baseline
-    if (modalLikeBtn) modalLikeBtn.classList.toggle('active', (img.dataset.liked === '1' || img.dataset.liked === 'true'));
-    if (modalSaveBtn) modalSaveBtn.classList.toggle('active', (img.dataset.saved === '1' || img.dataset.saved === 'true'));
+    if (modalLikeBtn) { modalLikeBtn.classList.toggle('active', (img.dataset.liked === '1' || img.dataset.liked === 'true')); modalLikeBtn.dataset.pending = '0'; }
+    if (modalSaveBtn) { modalSaveBtn.classList.toggle('active', (img.dataset.saved === '1' || img.dataset.saved === 'true')); modalSaveBtn.dataset.pending = '0'; }
+    if (modalShareBtn) { modalShareBtn.dataset.pending = '0'; }
     // initialize icon images
     setIconState(modalLikeBtn, modalLikeBtn && modalLikeBtn.classList.contains('active'), 'like');
     setIconState(modalSaveBtn, modalSaveBtn && modalSaveBtn.classList.contains('active'), 'save');
@@ -1748,9 +1793,13 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
                      data-date="${artwork.date || ''}"
                      data-avatar="${artwork.user?.avatar || '/images/icon/profil.png'}"
                      data-creator-role="${artwork.user?.role || artwork.user_role || ''}"
+                     data-license-label="${artwork.license_label || 'All Rights Reserved'}"
+                     data-artwork-url="${artwork.artwork_url || ('/artworks/' + artwork.id)}"
                      data-like-count="${artwork.like_count || 0}"
                      data-save-count="${artwork.save_count || 0}"
-                     data-share-count="${artwork.share_count || 0}">
+                     data-share-count="${artwork.share_count || 0}"
+                     data-liked="${artwork.liked ? '1' : '0'}"
+                     data-saved="${artwork.saved ? '1' : '0'}">
                 <div class="portfolio-info">
                   <h3>${artwork.title}</h3>
                   <p>${artwork.user?.username || artwork.artist || ''}</p>
@@ -1761,7 +1810,7 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
                     <span class="thumb-like-count">${artwork.like_count || 0}</span>
                   </span>
                   <span class="thumb-save" style="display:flex;align-items:center;gap:6px;">
-                    <img src="/images/icon/love.png" alt="save" style="width:16px;height:16px"/>
+                    <img src="/images/icon/save.png" alt="save" style="width:16px;height:16px"/>
                     <span class="thumb-save-count">${artwork.save_count || 0}</span>
                   </span>
                   <span class="thumb-share" style="display:flex;align-items:center;gap:6px;">
@@ -1774,12 +1823,6 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
             });
 
             portfolioGrid.appendChild(fragment);
-            
-            // Re-attach click handlers to new thumbnails
-            document.querySelectorAll('.thumbnail').forEach(img => {
-              img.removeEventListener('click', thumbnailClickHandler);
-              img.addEventListener('click', thumbnailClickHandler);
-            });
 
             pageNum++;
             isLoading = false;

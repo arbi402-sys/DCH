@@ -515,10 +515,25 @@
         @if(!empty($results) && count($results) > 0)
             <div class="portfolio-grid">
                 @foreach($results as $item)
-                    <div class="portfolio-item {{ $item['size'] === 'tall' ? 'tall' : '' }}">
+                    <div class="portfolio-item {{ ($item['size'] ?? 'normal') === 'tall' ? 'tall' : '' }}">
                             <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" class="thumbnail"
-                                data-title="{{ $item['title'] }}" data-desc="{{ $item['description'] }}" data-creator-name="{{ $item['artist'] }}"
-                                data-artwork-desc="{{ $item['description'] }}" data-date="{{ $item['date'] }}">
+                                data-artwork-id="{{ $item['id'] ?? '' }}"
+                                data-title="{{ $item['title'] }}"
+                                data-desc="{{ $item['description'] }}"
+                                data-creator-name="{{ $item['creator_name'] ?? $item['artist'] }}"
+                                data-creator-username="{{ $item['creator_username'] ?? $item['artist'] }}"
+                                data-creator-url="{{ $item['creator_url'] ?? '' }}"
+                                data-avatar="{{ $item['avatar'] ?? '/images/icon/profil.png' }}"
+                                data-creator-role="{{ $item['creator_role'] ?? '' }}"
+                                data-license-label="{{ $item['license_label'] ?? 'All Rights Reserved' }}"
+                                data-artwork-url="{{ $item['artwork_url'] ?? (!empty($item['id']) ? route('artworks.show', $item['id']) : '') }}"
+                                data-like-count="{{ $item['like_count'] ?? 0 }}"
+                                data-save-count="{{ $item['save_count'] ?? 0 }}"
+                                data-share-count="{{ $item['share_count'] ?? 0 }}"
+                                data-liked="{{ !empty($item['liked']) ? '1' : '0' }}"
+                                data-saved="{{ !empty($item['saved']) ? '1' : '0' }}"
+                                data-artwork-desc="{{ $item['description'] }}"
+                                data-date="{{ $item['date'] }}">
                         <div class="portfolio-info">
                             <h3>{{ $item['title'] }}</h3>
                             <p>{{ $item['artist'] }}</p>
@@ -577,6 +592,10 @@
         <!-- Artwork title and description -->
         <div style="flex:1;">
           <strong id="modalTitle" class="modal-title"></strong>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span id="modalLicenseBadge" style="display:none;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;"></span>
+            <a id="modalDetailLink" href="#" style="display:none;font-size:12px;color:#b91c1c;text-decoration:underline;">Detail &amp; Laporkan Karya</a>
+          </div>
           <p id="modalArtworkDesc" class="modal-artwork-desc">Deskripsi karya akan ditampilkan di sini.</p>
         </div>
 
@@ -726,6 +745,8 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
       currentImg.dataset.saveCount = finalCount ?? '';
       currentImg.dataset.saved = finalSaved ? '1' : '0';
       modalSaveBtn.classList.toggle('active', finalSaved);
+      setIconState(modalSaveBtn, finalSaved, 'save');
+      try { const container = currentImg.closest('.portfolio-item') || currentImg.closest('.art-card'); const sc = container?.querySelector('.thumb-save-count'); if (sc) sc.textContent = finalCount ?? ''; } catch (e){}
     } catch (err) { console.debug('save handler error', err); } finally { modalSaveBtn.dataset.pending = '0'; }
   }
 
@@ -800,6 +821,26 @@ document.querySelector('.menu-toggle')?.addEventListener('click', function() {
     }
     if (modalArtworkDesc) modalArtworkDesc.textContent = img.dataset.artworkDesc || "Deskripsi karya belum tersedia.";
     if (modalDate) modalDate.textContent = img.dataset.date;
+
+    const licenseBadgeEl = document.getElementById('modalLicenseBadge');
+    if (licenseBadgeEl) {
+      if (img.dataset.licenseLabel) {
+        licenseBadgeEl.textContent = 'Lisensi: ' + img.dataset.licenseLabel;
+        licenseBadgeEl.style.display = 'inline-block';
+      } else {
+        licenseBadgeEl.style.display = 'none';
+      }
+    }
+    const detailLinkEl = document.getElementById('modalDetailLink');
+    if (detailLinkEl) {
+      const detailUrl = img.dataset.artworkUrl || (img.dataset.artworkId ? ('/artworks/' + img.dataset.artworkId) : '');
+      if (detailUrl) {
+        detailLinkEl.href = detailUrl;
+        detailLinkEl.style.display = 'inline-block';
+      } else {
+        detailLinkEl.style.display = 'none';
+      }
+    }
 
     const modalLikeCount = modal.querySelector('#modalLikeCount');
     const modalSaveCount = modal.querySelector('#modalSaveCount');

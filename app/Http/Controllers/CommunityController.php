@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Schema;
 
 class CommunityController extends Controller
 {
@@ -15,11 +15,12 @@ class CommunityController extends Controller
         $category = $request->get('category');
 
         if (Schema::hasTable('articles')) {
-            $articles = Article::with('user','category')
-                ->when($category, fn($q) => $q->whereHas('category', fn($q2) => $q2->where('slug', $category)))
-                ->latest()->paginate(10);
+            $articles = Article::approved()
+                ->with('user', 'category')
+                ->when($category, fn ($q) => $q->whereHas('category', fn ($q2) => $q2->where('slug', $category)))
+                ->latest()
+                ->paginate(10);
         } else {
-            // Return an empty paginator so views that call ->links() still work
             $articles = new LengthAwarePaginator([], 0, 10, 1, [
                 'path' => $request->url(),
                 'query' => $request->query(),
@@ -28,6 +29,6 @@ class CommunityController extends Controller
 
         $categories = Schema::hasTable('categories') ? Category::all() : collect();
 
-        return view('community', compact('articles','categories'));
+        return view('community', compact('articles', 'categories'));
     }
 }

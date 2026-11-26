@@ -48,6 +48,25 @@ class SearchController extends Controller
      */
     private function searchArtworks(string $keyword): array
     {
+        if (\Illuminate\Support\Facades\Schema::hasTable('artworks')) {
+            $term = '%'.$keyword.'%';
+            $arts = \App\Models\Artwork::approved()
+                ->with('user', 'category')
+                ->withCount(['likedBy', 'savedBy'])
+                ->where(function ($q) use ($term) {
+                    $q->where('title', 'like', $term)
+                        ->orWhere('description', 'like', $term)
+                        ->orWhereHas('user', function ($uq) use ($term) {
+                            $uq->where('username', 'like', $term)
+                                ->orWhere('name', 'like', $term);
+                        });
+                })
+                ->latest()
+                ->get();
+
+            return $this->mapArtworks($arts);
+        }
+
         $allArtworks = $this->getAllArtworks();
         $keyword = strtolower($keyword);
 
@@ -68,27 +87,19 @@ class SearchController extends Controller
     {
         $slug = strtolower($category);
 
-        // If artworks table exists, fetch from database
+        // If artworks table exists, fetch approved artworks from database
         if (\Illuminate\Support\Facades\Schema::hasTable('artworks') && \Illuminate\Support\Facades\Schema::hasTable('categories')) {
             $cat = \App\Models\Category::where('slug', $slug)->first();
             if (!$cat) return [];
 
-            $arts = \App\Models\Artwork::with('user','category')
+            $arts = \App\Models\Artwork::approved()
+                ->with('user', 'category')
+                ->withCount(['likedBy', 'savedBy'])
                 ->where('category_id', $cat->id)
                 ->latest()
                 ->get();
 
-            return $arts->map(function ($art) {
-                return [
-                    'id' => $art->id,
-                    'title' => $art->title,
-                    'artist' => optional($art->user)->username ?? optional($art->user)->name ?? '',
-                    'description' => $art->description ?? '',
-                    'image' => !empty($art->image_path) ? asset('storage/'.$art->image_path) : ($art->image ?? null),
-                    'date' => isset($art->created_at) ? $art->created_at->diffForHumans() : '',
-                    'size' => $art->size ?? 'normal',
-                ];
-            })->toArray();
+            return $this->mapArtworks($arts);
         }
 
         // Fallback to static mapping for sample data
@@ -114,6 +125,46 @@ class SearchController extends Controller
         });
 
         return array_values($filtered);
+    }
+
+    /**
+     * Map Artwork models into array items for search/category views.
+     */
+    private function mapArtworks($arts): array
+    {
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+        $authLikedIds = ($authUser && \Illuminate\Support\Facades\Schema::hasTable('artwork_likes'))
+            ? $authUser->likedArtworks()->pluck('artworks.id')->all()
+            : [];
+        $authSavedIds = ($authUser && \Illuminate\Support\Facades\Schema::hasTable('artwork_saves'))
+            ? $authUser->savedArtworks()->pluck('artworks.id')->all()
+            : [];
+
+        return $arts->map(function ($art) use ($authLikedIds, $authSavedIds) {
+            return [
+                'id' => $art->id,
+                'title' => $art->title,
+                'artist' => optional($art->user)->username ?? optional($art->user)->name ?? '',
+                'creator_name' => optional($art->user)->name ?? optional($art->user)->username ?? '',
+                'creator_username' => optional($art->user)->username ?? '',
+                'creator_url' => optional($art->user)->username
+                    ? route('profile.show', $art->user->username)
+                    : (optional($art->user)->id ? route('profile.show', $art->user->id) : ''),
+                'avatar' => optional($art->user)->avatar_url ?? '/images/icon/profil.png',
+                'creator_role' => optional($art->user)->role ?? '',
+                'description' => $art->description ?? '',
+                'image' => !empty($art->image_path) ? asset('storage/'.$art->image_path) : ($art->image ?? null),
+                'date' => isset($art->created_at) ? $art->created_at->diffForHumans() : '',
+                'size' => $art->size ?? 'normal',
+                'like_count' => $art->liked_by_count ?? $art->likedBy()->count(),
+                'save_count' => $art->saved_by_count ?? $art->savedBy()->count(),
+                'share_count' => $art->share_count ?? 0,
+                'liked' => in_array($art->id, $authLikedIds, true),
+                'saved' => in_array($art->id, $authSavedIds, true),
+                'license_label' => $art->license_label,
+                'artwork_url' => route('artworks.show', $art->id),
+            ];
+        })->toArray();
     }
 
     /**

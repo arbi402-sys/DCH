@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Models\User;
 use App\Models\Article;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 class ArticleShowTest extends TestCase
 {
@@ -22,12 +22,12 @@ class ArticleShowTest extends TestCase
             'title' => 'Test Article',
             'body' => '<p>This is the <strong>body</strong> of the article.</p>',
         ]);
+        $article->status = Article::STATUS_APPROVED;
+        $article->save();
 
         $res = $this->get('/community');
         $res->assertSee('Test Article');
-        // author should be a link to profile
         $res->assertSee(route('profile.show', $user->username));
-        // read more should link to article show
         $res->assertSee(route('articles.show', $article->id));
     }
 
@@ -40,6 +40,8 @@ class ArticleShowTest extends TestCase
             'title' => 'Dosen Article',
             'body' => '<p>Full article body</p>',
         ]);
+        $article->status = Article::STATUS_APPROVED;
+        $article->save();
 
         $res = $this->get(route('articles.show', $article->id));
         $res->assertStatus(200);

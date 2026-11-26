@@ -24,6 +24,16 @@
     @if(session('error'))
       <div style="background:#e53935;color:white;padding:10px;border-radius:8px;margin:12px 0">{{ session('error') }}</div>
     @endif
+    @if($errors->any())
+      <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:12px;border-radius:8px;margin:12px 0">
+        <strong>Validasi gagal:</strong>
+        <ul style="margin:6px 0 0 18px;padding:0;">
+          @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
 
     <!-- Category filter removed per product request -->
 

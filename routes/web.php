@@ -17,10 +17,6 @@ Route::get('/about', function () {
     return view('about');
 });
 
-Route::get('/community', function () {
-    return view('community');
-});
-
 Route::get('/ilustrasi', function () {
     return view('ilustrasi');
 });
@@ -37,6 +33,10 @@ Route::get('/semua-kategori', function () {
     return view('semua-kategori');
 });
 
+Route::get('/not-found', function () {
+    return response()->view('errors.404', [], 404);
+})->name('not-found');
+
 // Auth Routes
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [LoginController::class, 'store']);
@@ -44,12 +44,18 @@ Route::get('/register', [RegisterController::class, 'index'])->name('register');
 Route::post('/register', [RegisterController::class, 'store']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Profile routes
+// Profile & content routes
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\ArtworkController;
+use App\Http\Controllers\ArtworkReportController;
+use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\ModerationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UploadController;
-use App\Http\Controllers\CommunityController;
 
 Route::get('/users/{identifier}', [ProfileController::class, 'show'])->name('profile.show');
+Route::get('/artworks/{art}', [ArtworkController::class, 'show'])->name('artworks.show');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -58,29 +64,39 @@ Route::middleware('auth')->group(function () {
     Route::post('/upload/artwork', [UploadController::class, 'storeArtwork'])->name('upload.artwork');
     Route::post('/upload/article', [UploadController::class, 'storeArticle'])->name('upload.article');
 
-    // Artwork interactions
-    Route::post('/artworks/{art}/like', [App\Http\Controllers\ArtworkController::class, 'toggleLike'])->name('artworks.like')->middleware('auth');
-    Route::post('/artworks/{art}/save', [App\Http\Controllers\ArtworkController::class, 'toggleSave'])->name('artworks.save')->middleware('auth');
+    // Artwork interactions & infringement reporting
+    Route::post('/artworks/{art}/like', [ArtworkController::class, 'toggleLike'])->name('artworks.like');
+    Route::post('/artworks/{art}/save', [ArtworkController::class, 'toggleSave'])->name('artworks.save');
+    Route::post('/artworks/{art}/report', [ArtworkReportController::class, 'store'])->name('artworks.report');
 
     Route::post('/users/{username}/follow', [ProfileController::class, 'follow'])->name('profile.follow');
     Route::post('/users/{username}/unfollow', [ProfileController::class, 'unfollow'])->name('profile.unfollow');
 
-    // Article deletion (only for authenticated creators)
-    Route::delete('/articles/{article}', [App\Http\Controllers\ArticleController::class, 'destroy'])->name('articles.destroy');
+    // Article deletion (only for authenticated creators or admins)
+    Route::delete('/articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
+});
+
+// Admin moderation & report review routes
+Route::middleware(['auth', 'admin'])->prefix('admin/moderation')->name('admin.moderation.')->group(function () {
+    Route::get('/', [ModerationController::class, 'index'])->name('index');
+    Route::post('/artworks/{artwork}/approve', [ModerationController::class, 'approveArtwork'])->name('artworks.approve');
+    Route::post('/artworks/{artwork}/reject', [ModerationController::class, 'rejectArtwork'])->name('artworks.reject');
+    Route::post('/articles/{article}/approve', [ModerationController::class, 'approveArticle'])->name('articles.approve');
+    Route::post('/articles/{article}/reject', [ModerationController::class, 'rejectArticle'])->name('articles.reject');
+    Route::post('/reports/{report}/review', [ModerationController::class, 'reviewReport'])->name('reports.review');
 });
 
 // Community listing (articles)
 Route::get('/community', [CommunityController::class, 'index'])->name('community.index');
 
 // Public share endpoint for artworks (record share counts)
-Route::post('/artworks/{art}/share', [App\Http\Controllers\ArtworkController::class, 'recordShare'])->name('artworks.share');
+Route::post('/artworks/{art}/share', [ArtworkController::class, 'recordShare'])->name('artworks.share');
 
-// debug notify page (convenience for local testing, harmless in other envs)
-require_once base_path('routes/web_debug_notify.php');
+// debug notify page (use require so route registration stays repeatable across tests)
+require base_path('routes/web_debug_notify.php');
 // debug sample creation endpoint (local testing)
-require_once base_path('routes/web_debug_samples.php');
+require base_path('routes/web_debug_samples.php');
 // Article show route
-use App\Http\Controllers\ArticleController;
 Route::get('/articles/{article}', [ArticleController::class, 'show'])->name('articles.show');
 
 // Temporary dev-only route to seed sample artworks (only in local env)
@@ -138,4 +154,8 @@ Route::get('/__debug/csrf', function (\Illuminate\Http\Request $request) {
     $cookie = $request->cookie('XSRF-TOKEN');
     $sessionId = $request->cookie(config('session.cookie'));
     return response()->json([ 'csrf_meta' => $meta, 'cookie_xsrf' => $cookie, 'session_cookie' => $sessionId, 'cookies' => $request->cookie() ]);
+});
+
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
 });

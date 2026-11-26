@@ -31,19 +31,35 @@ class SampleArtworksSeeder extends Seeder
         Storage::disk('public')->put('artworks/sample.svg', $svg);
         Storage::disk('public')->put('artworks/sample2.svg', $svg);
 
-        // create artworks
-        Artwork::firstOrCreate([
+        // create artworks (mark sample artworks as approved so seeded gallery is visible)
+        $art1 = Artwork::firstOrCreate([
             'user_id' => $user->id,
             'title' => 'Sketsa 2',
             'description' => 'Deskripsi karya contoh (poster, teknik, dll).',
             'image_path' => 'artworks/sample.svg',
+        ], [
+            'license' => 'cc_by',
+            'originality_confirmed' => true,
+            'copyright_confirmed_at' => now(),
         ]);
+        if ($art1->status !== Artwork::STATUS_APPROVED) {
+            $art1->status = Artwork::STATUS_APPROVED;
+            $art1->save();
+        }
 
-        Artwork::firstOrCreate([
+        $art2 = Artwork::firstOrCreate([
             'user_id' => $user->id,
             'title' => 'Poster Konsep',
             'description' => 'Contoh deskripsi kedua untuk melihat tampilan modal.',
             'image_path' => 'artworks/sample2.svg',
+        ], [
+            'license' => 'all_rights_reserved',
+            'originality_confirmed' => true,
+            'copyright_confirmed_at' => now(),
         ]);
+        if ($art2->status !== Artwork::STATUS_APPROVED) {
+            $art2->status = Artwork::STATUS_APPROVED;
+            $art2->save();
+        }
     }
 }
